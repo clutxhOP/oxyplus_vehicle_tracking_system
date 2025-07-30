@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - OxyPlus Vehicle Tracking Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 50%, #4CAF50 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #2196F3, #21CBF3, #4CAF50);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-bottles {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-right: 0.5rem;
+        }
+
+        .water-bottle {
+            width: 18px;
+            height: 32px;
+            background: linear-gradient(180deg, #2196F3 0%, #21CBF3 100%);
+            border-radius: 3px 3px 8px 8px;
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+        }
+
+        .water-bottle::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 4px;
+            background: #1976D2;
+            border-radius: 2px;
+        }
+
+        .water-bottle::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 3px;
+            right: 3px;
+            height: 20px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            animation: waterLevel 2s ease-in-out infinite;
+        }
+
+        .water-bottle:nth-child(1) { animation-delay: 0s; }
+        .water-bottle:nth-child(2) { animation-delay: 0.5s; }
+        .water-bottle:nth-child(3) { animation-delay: 1s; }
+
+        .leaf-icon {
+            color: #4CAF50;
+            font-size: 1.8rem;
+            margin-left: 0.5rem;
+            animation: sway 3s ease-in-out infinite;
+            text-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #1976D2;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .oxy-plus-text {
+            background: linear-gradient(135deg, #2196F3, #21CBF3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .back-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .back-btn:hover {
+            background: linear-gradient(135deg, #1976D2, #1565C0);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        .back-btn:hover::before {
+            left: 100%;
+        }
+
+        .back-btn:active {
+            transform: translateY(0);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .settings-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .settings-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2196F3, #21CBF3, #4CAF50);
+        }
+
+        .settings-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .settings-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .settings-section h3 {
+            color: #1976D2;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #E3F2FD;
+            padding-bottom: 0.8rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .settings-section h3::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #2196F3, #21CBF3);
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+            color: #424242;
+            font-size: 0.95rem;
+        }
+
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #E0E0E0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #FAFAFA;
+            font-family: inherit;
+        }
+
+        .form-group input:focus, 
+        .form-group select:focus, 
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2196F3;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-group input[type="password"] {
+            background: #F5F5F5;
+        }
+
+        .form-group select {
+            background: #fff;
+            color: #333;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%232196F3" class="bi bi-caret-down-fill" viewBox="0 0 16 16"><path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592c.86 0 1.319 1.013.753 1.658l-4.796 5.482a1 1 0 0 1-1.506 0z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1rem;
+            cursor: pointer;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.7rem;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #45a049, #3d8b40);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:disabled {
+            background: #BDBDBD;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #d32f2f, #c62828);
+            box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #F57C00, #EF6C00);
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #1976D2, #1565C0);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: none;
+            border-left: 4px solid;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #E8F5E8, #F1F8E9);
+            color: #2E7D32;
+            border-left-color: #4CAF50;
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #FFEBEE, #FFEAEA);
+            color: #C62828;
+            border-left-color: #f44336;
+        }
+
+        .help-text {
+            font-size: 0.85rem;
+            color: #757575;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #fff;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 20px;
+            width: 85%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #E0E0E0;
+        }
+
+        .close {
+            color: #757575;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+            border: none;
+            background: none;
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close:hover {
+            color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+        }
+
+        .upload-area {
+            border: 3px dashed #BDBDBD;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            margin: 1rem 0;
+            transition: all 0.3s ease;
+            background: #FAFAFA;
+        }
+
+        .upload-area.dragover {
+            border-color: #2196F3;
+            background: linear-gradient(135deg, #E3F2FD, #F3E5F5);
+            transform: scale(1.02);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .file-controls button {
+            padding: 0.7rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+
+        @keyframes sway {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-8deg); }
+            75% { transform: rotate(8deg); }
+        }
+
+        @keyframes waterLevel {
+            0%, 100% { height: 15px; opacity: 0.6; }
+            50% { height: 22px; opacity: 0.8; }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .container {
+                margin: 1rem auto;
+                padding: 0 0.5rem;
+            }
+
+            .settings-card {
+                padding: 1.5rem;
+                border-radius: 15px;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 0.5rem;
+            }
+
+            .file-controls {
+                flex-direction: column;
+            }
+
+            .file-controls button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo-bottles {
+                gap: 0.2rem;
+            }
+
+            .water-bottle {
+                width: 16px;
+                height: 28px;
+            }
+
+            .leaf-icon {
+                font-size: 1.5rem;
+            }
+
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+                padding: 1.5rem;
+            }
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        *:focus {
+            outline: 2px solid #2196F3;
+            outline-offset: 2px;
+        }
+
+        .btn:focus,
+        .back-btn:focus {
+            outline: 3px solid rgba(33, 150, 243, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-cog"></i> Settings</h1>
+        <a href="/" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+            Back to Dashboard
+        </a>
+    </div>
+    
+    <div class="container">
+        <div id="alert" class="alert"></div>
+        
+        <div class="settings-card">
+            <form id="settingsForm">
+                <div class="settings-section">
+                    <h3><i class="fas fa-route"></i> Route & Data Settings</h3>
+                    
+                    <div class="form-group">
+                        <label for="ors_api_key">OpenRouteService API Key</label>
+                        <input type="password" id="ors_api_key" name="ors_api_key" value="{{ settings.ors_api_key if settings.ors_api_key else '' }}">
+                        <div class="help-text">Used for route generation and mapping services</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="alert_followup_url">URL to Attach in WhatsApp Alerts</label>
+                        <input type="text" id="alert_followup_url" name="alert_followup_url" value="{{ settings.alert_followup_url if settings.alert_followup_url else '' }}">
+                        <div class="help-text">This link will be added to alert messages for quick access (e.g. your dashboard or details page).</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="whatsapp_server_url">URL this app will use for whatsapp services</label>
+                        <input type="text" id="whatsapp_server_url" name="whatsapp_server_url" value="{{ settings.whatsapp_server_url if settings.alert_followup_url else '' }}">
+                        <div class="help-text">This will be the public url for the whatsapp server, so we can send alerts.</div>
+                    </div>  
+                    <div class="form-group">
+                        <label for="csv_path_current">Current Data CSV Path</label>
+                        <input type="text" id="csv_path_current" name="csv_path_current" value="{{ settings.csv_path_current }}">
+                        <div class="help-text">Path to current travel report CSV file</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="csv_path_past">Historical Data CSV Path</label>
+                        <input type="text" id="csv_path_past" name="csv_path_past" value="{{ settings.csv_path_past }}">
+                        <div class="help-text">Path to historical travel report CSV file</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="geojson_path">GeoJSON Routes Path</label>
+                        <select id="geojson_path" name="geojson_path">
+                            {% for file in available.geojson_paths %}
+                            <option value="analysis/routes_json/{{ file }}" {% if settings.geojson_path.endswith(file) %}selected{% endif %}>{{ file }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="help-text">Choose a route plan GeoJSON file</div>
+                        <div class="file-controls">
+                            <button type="button" onclick="uploadFile('geojson')" class="btn-info">
+                                <i class="fas fa-upload"></i> Upload New
+                            </button>
+                            <button type="button" onclick="deleteFile('geojson')" class="btn-danger">
+                                <i class="fas fa-trash"></i> Delete Selected
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customer_points_path">Customer Points CSV</label>
+                        <select id="customer_points_path" name="customer_points_path">
+                            {% for file in available.customer_points %}
+                            <option value="analysis/customerpoints/{{ file }}" {% if settings.customer_points_path.endswith(file) %}selected{% endif %}>{{ file }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="help-text">Choose customer points file</div>
+                        <div class="file-controls">
+                            <button type="button" onclick="uploadFile('customer_points')" class="btn-info">
+                                <i class="fas fa-upload"></i> Upload New
+                            </button>
+                            <button type="button" onclick="deleteFile('customer_points')" class="btn-danger">
+                                <i class="fas fa-trash"></i> Delete Selected
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3><i class="fas fa-edit"></i> Manual Edits Management</h3>
+                    <div class="help-text">Import/Export manual customer point edits for fine-tuning routes</div>
+                    
+                    <div class="file-controls">
+                        <button type="button" onclick="exportEdits()" class="btn-warning">
+                            <i class="fas fa-download"></i> Export Edits CSV
+                        </button>
+                        <button type="button" onclick="importEdits()" class="btn-info">
+                            <i class="fas fa-upload"></i> Import Edits CSV
+                        </button>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h3><i class="fas fa-address-book"></i> Contacts Management</h3>
+                    <div class="help-text">Import/Export contacts.txt file for WhatsApp bot integration</div>
+                    
+                    <div class="file-controls">
+                        <button type="button" onclick="exportContacts()" class="btn-warning">
+                            <i class="fas fa-download"></i> Export Contacts.txt
+                        </button>
+                        <button type="button" onclick="importContacts()" class="btn-info">
+                            <i class="fas fa-upload"></i> Import Contacts.txt
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3><i class="fas fa-user-check"></i> Contact Status Management</h3>
+                    <div class="help-text">Import/Export contact_status.csv file for WhatsApp bot contact tracking</div>
+                    
+                    <div class="file-controls">
+                        <button type="button" onclick="exportContactStatus()" class="btn-warning">
+                            <i class="fas fa-download"></i> Export Contact Status
+                        </button>
+                        <button type="button" onclick="importContactStatus()" class="btn-info">
+                            <i class="fas fa-upload"></i> Import Contact Status
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3><i class="fas fa-database"></i> Extracted Data Management</h3>
+                    <div class="help-text">Import/Export extracted_data.csv file for WhatsApp bot data processing</div>
+                    
+                    <div class="file-controls">
+                        <button type="button" onclick="exportExtractedData()" class="btn-warning">
+                            <i class="fas fa-download"></i> Export Extracted Data
+                        </button>
+                        <button type="button" onclick="importExtractedData()" class="btn-info">
+                            <i class="fas fa-upload"></i> Import Extracted Data
+                        </button>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h3><i class="fas fa-robot"></i> AI Chat Settings</h3>
+                    
+                    <div class="form-group">
+                        <label for="gemini_api_key">Google Gemini API Key</label>
+                        <input type="password" id="gemini_api_key" name="gemini_api_key" value="{{ settings.gemini_api_key if settings.gemini_api_key else '' }}" placeholder="Enter Gemini API key...">
+                        <div class="help-text">For Gemini-based chat responses</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="openai_api_key">OpenAI API Key</label>
+                        <input type="password" id="openai_api_key" name="openai_api_key" value="{{ settings.openai_api_key if settings.openai_api_key else '' }}" placeholder="Enter OpenAI API key...">
+                        <div class="help-text">For OpenAI GPT-based chat responses and additional AI features</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="gemini_model">Default Gemini Model</label>
+                        <select id="gemini_model" name="gemini_model">
+                            <option disabled selected>Loading available models...</option>
+                        </select>
+                        <div class="help-text">Default model used in chat interface. Can be changed during chat.</div>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3><i class="fas fa-truck"></i> Vehicle Aliases</h3>
+                    <div class="help-text">Map vehicle IDs to friendly names for better display in the application.</div>
+                    
+                    <div id="vehicleAliasesContainer">
+                        <div class="vehicle-alias-item" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                            <input type="text" placeholder="Vehicle ID" class="vehicle-id-input" style="flex: 1; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" placeholder="Alias/Name" class="vehicle-alias-input" style="flex: 2; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                            <button type="button" class="remove-alias-btn" style="background: #dc3545; color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer;">×</button>
+                        </div>
+                    </div>
+                    
+                    <button type="button" id="addAliasBtn" style="background: #28a745; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin-top: 10px;">
+                        <i class="fas fa-plus"></i> Add Vehicle Alias
+                    </button>
+                </div>
+                <div class="settings-section">
+                    <h3><i class="fas fa-phone"></i> Alert Phone Numbers</h3>
+                    <div class="help-text">Configure which numbers should receive SMS alerts.</div>
+                    
+                    <div id="phoneNumbersContainer">
+                    </div>
+                    
+                    <div style="margin-top: 10px; display: flex; gap: 10px;">
+                        <button type="button" id="addAdminBtn" style="background: #007bff; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-user-shield"></i> Add Admin
+                        </button>
+                        <button type="button" id="addDriverBtn" style="background: #28a745; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-user"></i> Add Driver
+                        </button>
+                    </div>
+                </div>  
+                <button type="submit" class="btn">
+                    <i class="fas fa-save"></i>
+                    Save Settings
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="uploadModalTitle">Upload File</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="upload-area" id="uploadArea">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+                <p>Drag and drop file here or click to select</p>
+                <input type="file" id="fileInput" class="file-input">
+                <button type="button" onclick="document.getElementById('fileInput').click()" class="btn">Choose File</button>
+            </div>
+            <div id="uploadProgress" style="display: none;">
+                <div style="background: #f0f0f0; border-radius: 10px; height: 20px; margin: 10px 0;">
+                    <div id="progressBar" style="background: #28a745; height: 100%; border-radius: 10px; width: 0%; transition: width 0.3s;"></div>
+                </div>
+                <p id="uploadStatus">Uploading...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUploadType = '';
+
+        const vehicleAliasesContainer = document.getElementById('vehicleAliasesContainer');
+        const addAliasBtn = document.getElementById('addAliasBtn');
+    
+        function createAliasItem(vehicleId = '', alias = '') {
+            const item = document.createElement('div');
+            item.className = 'vehicle-alias-item';
+            item.style.cssText = 'display: flex; gap: 10px; margin-bottom: 10px; align-items: center;';
+            item.innerHTML = `
+                <input type="text" placeholder="Vehicle ID" class="vehicle-id-input" value="${vehicleId}" style="flex: 1; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                <input type="text" placeholder="Alias/Name" class="vehicle-alias-input" value="${alias}" style="flex: 2; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                <button type="button" class="remove-alias-btn" style="background: #dc3545; color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer;">×</button>
+            `;
+            item.querySelector('.remove-alias-btn').addEventListener('click', () => {
+                if (vehicleAliasesContainer.children.length > 1) item.remove();
+            });
+            return item;
+        }
+    
+        addAliasBtn.addEventListener('click', () => {
+            vehicleAliasesContainer.appendChild(createAliasItem());
+        });
+    
+        async function loadVehicleAliases() {
+            try {
+                const response = await fetch('/api/vehicle-aliases');
+                const data = await response.json();
+                vehicleAliasesContainer.innerHTML = '';
+                if (data.aliases && Object.keys(data.aliases).length > 0) {
+                    for (const [vehicleId, alias] of Object.entries(data.aliases)) {
+                        vehicleAliasesContainer.appendChild(createAliasItem(vehicleId, alias));
+                    }
+                } else {
+                    vehicleAliasesContainer.appendChild(createAliasItem());
+                }
+            } catch (error) {
+                console.error('Error loading vehicle aliases:', error);
+                vehicleAliasesContainer.appendChild(createAliasItem());
+            }
+        }
+    
+        async function saveVehicleAliases() {
+            const aliases = {};
+            const items = vehicleAliasesContainer.querySelectorAll('.vehicle-alias-item');
+            for (const item of items) {
+                const vehicleId = item.querySelector('.vehicle-id-input').value.trim();
+                const alias = item.querySelector('.vehicle-alias-input').value.trim();
+                if (vehicleId && alias) {
+                    aliases[vehicleId] = alias;
+                }
+            }
+            try {
+                const response = await fetch('/api/vehicle-aliases', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ aliases })
+                });
+                const result = await response.json();
+                showAlert(result.success ? 'success' : 'error', result.message);
+            } catch (error) {
+                showAlert('error', 'Error saving vehicle aliases: ' + error.message);
+            }
+        }
+
+        const phoneContainer = document.getElementById('phoneNumbersContainer');
+        const addAdminBtn = document.getElementById('addAdminBtn');
+        const addDriverBtn = document.getElementById('addDriverBtn');
+
+        function createPhoneItem(name = '', phone = '', alerts = true, category = 'Admin', vehicleId = '') {
+            const item = document.createElement('div');
+            item.className = 'phone-number-item';
+            item.style.cssText = 'display: flex; gap: 10px; margin-bottom: 10px; align-items: center; padding: 10px; border: 1px solid #e1e5e9; border-radius: 8px; background: #f8f9fa;';
+            
+            const categoryBadge = category === 'Admin' ? 
+                '<span style="background: #007bff; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; margin-right: 5px;">Admin</span>' :
+                '<span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; margin-right: 5px;">Driver</span>';
+            
+            const vehicleField = category === 'Driver' ? 
+                `<select class="vehicle-id-select" style="flex: 1; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="">Select Vehicle</option>
+                </select>` : '';
+            
+            item.innerHTML = `
+                <div style="flex: 0.5; display: flex; align-items: center;">
+                    ${categoryBadge}
+                </div>
+                <input type="text" placeholder="Name" class="phone-name-input" value="${name}" style="flex: 1.5; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                <input type="text" placeholder="Phone" class="phone-number-input" value="${phone}" style="flex: 2; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                ${vehicleField}
+                <label style="flex: 1; display: flex; align-items: center; gap: 5px;">
+                    <input type="checkbox" class="phone-alerts-checkbox" ${alerts ? 'checked' : ''}>
+                    Alerts
+                </label>
+                <input type="hidden" class="phone-category" value="${category}">
+                <button type="button" class="remove-phone-btn" style="background: #dc3545; color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer;">×</button>
+            `;
+
+            if (category === 'Driver') {
+                const vehicleSelect = item.querySelector('.vehicle-id-select');
+                loadVehicleOptions(vehicleSelect, vehicleId);
+            }
+
+            item.querySelector('.remove-phone-btn').addEventListener('click', () => {
+                if (phoneContainer.children.length > 1) item.remove();
+            });
+
+            return item;
+        }
+
+        async function loadVehicleOptions(selectElement, selectedValue = '') {
+            try {
+                const response = await fetch('/api/vehicle-aliases');
+                const data = await response.json();
+                
+                selectElement.innerHTML = '<option value="">Select Vehicle</option>';
+                
+                if (data.aliases) {
+                    for (const [vehicleId, alias] of Object.entries(data.aliases)) {
+                        const option = document.createElement('option');
+                        option.value = vehicleId;
+                        option.textContent = `${vehicleId} - ${alias}`;
+                        if (vehicleId === selectedValue) option.selected = true;
+                        selectElement.appendChild(option);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading vehicle options:', error);
+            }
+        }
+
+        addAdminBtn.addEventListener('click', () => {
+            phoneContainer.appendChild(createPhoneItem('', '', true, 'Admin'));
+        });
+
+        addDriverBtn.addEventListener('click', () => {
+            phoneContainer.appendChild(createPhoneItem('', '', true, 'Driver'));
+        });
+
+        async function loadPhoneNumbers() {
+            try {
+                const res = await fetch('/api/phone-numbers');
+                const data = await res.json();
+                phoneContainer.innerHTML = '';
+                
+                if (data.phone_numbers?.length > 0) {
+                    for (const entry of data.phone_numbers) {
+                        const category = entry.category || 'Admin';
+                        const vehicleId = entry.vehicle_id || '';
+                        phoneContainer.appendChild(createPhoneItem(entry.name, entry.phone, entry.alerts, category, vehicleId));
+                    }
+                } else {
+                    phoneContainer.appendChild(createPhoneItem('', '', true, 'Admin'));
+                }
+            } catch (err) {
+                console.error('Failed to load phone numbers', err);
+                phoneContainer.appendChild(createPhoneItem('', '', true, 'Admin'));
+            }
+        }
+
+        async function savePhoneNumbers() {
+            const numbers = [];
+            const items = phoneContainer.querySelectorAll('.phone-number-item');
+            
+            for (const item of items) {
+                const name = item.querySelector('.phone-name-input').value.trim();
+                const phone = item.querySelector('.phone-number-input').value.trim();
+                const alerts = item.querySelector('.phone-alerts-checkbox').checked;
+                const category = item.querySelector('.phone-category').value;
+                
+                if (name && phone) {
+                    const entry = { name, phone, alerts, category };
+                    
+                    if (category === 'Driver') {
+                        const vehicleSelect = item.querySelector('.vehicle-id-select');
+                        const vehicleId = vehicleSelect ? vehicleSelect.value : '';
+                        if (vehicleId) {
+                            entry.vehicle_id = vehicleId;
+                        }
+                    }
+                    
+                    numbers.push(entry);
+                }
+            }
+            
+            try {
+                const res = await fetch('/api/phone-numbers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone_numbers: numbers })
+                });
+                return await res.json();
+            } catch (err) {
+                console.error('Save phone numbers failed', err);
+                return { success: false, message: 'Failed to save phone numbers' };
+            }
+        }
+
+        function showAlert(type, message) {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.style.display = 'block';
+            if (type === 'success') {
+                setTimeout(() => { alert.style.display = 'none'; }, 3000);
+            }
+        }
+
+        function uploadFile(type) {
+            currentUploadType = type;
+            const modal = document.getElementById('uploadModal');
+            const title = document.getElementById('uploadModalTitle');
+            const fileInput = document.getElementById('fileInput');
+            
+            if (type === 'geojson') {
+                title.textContent = 'Upload GeoJSON Route File';
+                fileInput.accept = '.geojson,.json';
+            } else if (type === 'customer_points') {
+                title.textContent = 'Upload Customer Points CSV';
+                fileInput.accept = '.csv';
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('uploadModal').style.display = 'none';
+            document.getElementById('uploadProgress').style.display = 'none';
+            document.getElementById('uploadArea').style.display = 'block';
+            document.getElementById('fileInput').value = '';
+        }
+
+        async function deleteFile(type) {
+            const selectElement = document.getElementById(type === 'geojson' ? 'geojson_path' : 'customer_points_path');
+            const selectedValue = selectElement.value;
+            
+            if (!selectedValue) {
+                showAlert('error', 'No file selected to delete');
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to delete this file? This action cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/files/${type}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file_path: selectedValue })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('success', result.message);
+                    location.reload();
+                } else {
+                    showAlert('error', result.message);
+                }
+            } catch (error) {
+                showAlert('error', 'Error deleting file: ' + error.message);
+            }
+        }
+        async function exportContacts() {
+            try {
+                const response = await fetch('/api/contacts/export');
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'contacts.txt';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showAlert('success', 'Contacts.txt exported successfully');
+                } else {
+                    const result = await response.json();
+                    showAlert('error', result.message || 'Failed to export contacts');
+                }
+            } catch (error) {
+                showAlert('error', 'Error exporting contacts: ' + error.message);
+            }
+        }
+
+        function importContacts() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.txt';
+            fileInput.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    const response = await fetch('/api/contacts/import', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    showAlert(result.success ? 'success' : 'error', result.message);
+                } catch (error) {
+                    showAlert('error', 'Error importing contacts: ' + error.message);
+                }
+            };
+            fileInput.click();
+        }
+
+        async function exportContactStatus() {
+            try {
+                const response = await fetch('/api/contact-status/export');
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'contact_status.csv';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showAlert('success', 'Contact Status exported successfully');
+                } else {
+                    const result = await response.json();
+                    showAlert('error', result.message || 'Failed to export contact status');
+                }
+            } catch (error) {
+                showAlert('error', 'Error exporting contact status: ' + error.message);
+            }
+        }
+
+        function importContactStatus() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.csv';
+            fileInput.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    const response = await fetch('/api/contact-status/import', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    showAlert(result.success ? 'success' : 'error', result.message);
+                } catch (error) {
+                    showAlert('error', 'Error importing contact status: ' + error.message);
+                }
+            };
+            fileInput.click();
+        }
+
+        async function exportExtractedData() {
+            try {
+                const response = await fetch('/api/extracted-data/export');
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'extracted_data.csv';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showAlert('success', 'Extracted Data exported successfully');
+                } else {
+                    const result = await response.json();
+                    showAlert('error', result.message || 'Failed to export extracted data');
+                }
+            } catch (error) {
+                showAlert('error', 'Error exporting extracted data: ' + error.message);
+            }
+        }
+
+        function importExtractedData() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.csv';
+            fileInput.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    const response = await fetch('/api/extracted-data/import', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    showAlert(result.success ? 'success' : 'error', result.message);
+                } catch (error) {
+                    showAlert('error', 'Error importing extracted data: ' + error.message);
+                }
+            };
+            fileInput.click();
+        }
+        document.getElementById('settingsForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const settings = {};
+            for (let [key, value] of formData.entries()) {
+                settings[key] = value;
+            }
+    
+            try {
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+    
+                const result = await response.json();
+                const alert = document.getElementById('alert');
+    
+                if (result.success) {
+                    alert.className = 'alert alert-success';
+                    alert.textContent = result.message;
+                    alert.style.display = 'block';
+                    setTimeout(() => { alert.style.display = 'none'; }, 3000);
+                } else {
+                    alert.className = 'alert alert-error';
+                    alert.textContent = result.message;
+                    alert.style.display = 'block';
+                }
+    
+                await saveVehicleAliases();
+                await savePhoneNumbers();
+    
+            } catch (error) {
+                const alert = document.getElementById('alert');
+                alert.className = 'alert alert-error';
+                alert.textContent = 'Error saving settings: ' + error.message;
+                alert.style.display = 'block';
+            }
+        });
+    
+        // === INITIAL LOAD ===
+        window.addEventListener('load', async function () {
+            try {
+                const response = await fetch('/api/settings');
+                const settings = await response.json();
+    
+                try {
+                    const modelRes = await fetch('/api/gemini-models');
+                    const modelData = await modelRes.json();
+                    const modelSelect = document.getElementById('gemini_model');
+                    modelSelect.innerHTML = '';
+                    if (modelData.models && modelData.models.length) {
+                        modelData.models.forEach(model => {
+                            const option = document.createElement('option');
+                            option.value = model.name;
+                            const shortName = model.name.split('/').pop();
+                            const tokenLimit = model.token_limit || 'N/A';
+                            let displayText = `${shortName} (${tokenLimit} tokens)`;
+                            if (model.is_recommended) displayText += ' ⭐';
+                            if (model.is_deprecated) displayText += ' ⚠️';
+                            option.textContent = displayText;
+                            if (model.name === settings.gemini_model) option.selected = true;
+                            modelSelect.appendChild(option);
+                        });
+                    }
+                } catch (modelError) {
+                    console.error('Error loading models:', modelError);
+                    const fallbackModels = [
+                        { name: 'models/gemini-2.0-flash-exp', display: 'Gemini 2.0 Flash (Recommended)' },
+                        { name: 'models/gemini-1.5-flash', display: 'Gemini 1.5 Flash (Fast & Efficient)' },
+                        { name: 'models/gemini-1.0-pro', display: 'Gemini 1.0 Pro (High Capacity)' },
+                        { name: 'models/gemini-1.5-pro', display: 'Gemini 1.5 Pro (Balanced)' }
+                    ];
+                    const modelSelect = document.getElementById('gemini_model');
+                    modelSelect.innerHTML = '';
+                    fallbackModels.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.name;
+                        option.textContent = model.display;
+                        if (model.name === settings.gemini_model) option.selected = true;
+                        modelSelect.appendChild(option);
+                    });
+                }
+    
+                for (const [key, value] of Object.entries(settings)) {
+                    const input = document.getElementById(key);
+                    if (input && value && !value.startsWith('*') && key !== 'gemini_model') {
+                        input.value = value;
+                    }
+                }
+    
+                await loadVehicleAliases();
+                await loadPhoneNumbers();
+    
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        });
+
+        // === FILE MANAGEMENT FUNCTIONS ===
+        function showAlert(type, message) {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.style.display = 'block';
+            if (type === 'success') {
+                setTimeout(() => { alert.style.display = 'none'; }, 3000);
+            }
+        }
+
+        function uploadFile(type) {
+            currentUploadType = type;
+            const modal = document.getElementById('uploadModal');
+            const title = document.getElementById('uploadModalTitle');
+            const fileInput = document.getElementById('fileInput');
+            
+            if (type === 'geojson') {
+                title.textContent = 'Upload GeoJSON Route File';
+                fileInput.accept = '.geojson,.json';
+            } else if (type === 'customer_points') {
+                title.textContent = 'Upload Customer Points CSV';
+                fileInput.accept = '.csv';
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('uploadModal').style.display = 'none';
+            document.getElementById('uploadProgress').style.display = 'none';
+            document.getElementById('uploadArea').style.display = 'block';
+            document.getElementById('fileInput').value = '';
+        }
+
+        async function deleteFile(type) {
+            const selectElement = document.getElementById(type === 'geojson' ? 'geojson_path' : 'customer_points_path');
+            const selectedValue = selectElement.value;
+            
+            if (!selectedValue) {
+                showAlert('error', 'No file selected to delete');
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to delete this file? This action cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/files/${type}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file_path: selectedValue })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('success', result.message);
+                    location.reload();
+                } else {
+                    showAlert('error', result.message);
+                }
+            } catch (error) {
+                showAlert('error', 'Error deleting file: ' + error.message);
+            }
+        }
+
+        async function exportEdits() {
+            try {
+                const response = await fetch('/api/edits/export');
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'edits.csv';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showAlert('success', 'Edits CSV exported successfully');
+                } else {
+                    const result = await response.json();
+                    showAlert('error', result.message || 'Failed to export edits');
+                }
+            } catch (error) {
+                showAlert('error', 'Error exporting edits: ' + error.message);
+            }
+        }
+
+        function importEdits() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.csv';
+            fileInput.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    const response = await fetch('/api/edits/import', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    showAlert(result.success ? 'success' : 'error', result.message);
+                } catch (error) {
+                    showAlert('error', 'Error importing edits: ' + error.message);
+                }
+            };
+            fileInput.click();
+        }
+
+        // === FILE UPLOAD HANDLERS ===
+        document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+
+        const uploadArea = document.getElementById('uploadArea');
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('fileInput').files = files;
+                handleFileUpload();
+            }
+        });
+
+        async function handleFileUpload() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const uploadArea = document.getElementById('uploadArea');
+            const uploadProgress = document.getElementById('uploadProgress');
+            const progressBar = document.getElementById('progressBar');
+            const uploadStatus = document.getElementById('uploadStatus');
+
+            uploadArea.style.display = 'none';
+            uploadProgress.style.display = 'block';
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('type', currentUploadType);
+
+            try {
+                const xhr = new XMLHttpRequest();
+                
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percentComplete = (e.loaded / e.total) * 100;
+                        progressBar.style.width = percentComplete + '%';
+                        uploadStatus.textContent = `Uploading... ${Math.round(percentComplete)}%`;
+                    }
+                });
+
+                xhr.addEventListener('load', () => {
+                    if (xhr.status === 200) {
+                        const result = JSON.parse(xhr.responseText);
+                        if (result.success) {
+                            showAlert('success', result.message);
+                            closeModal();
+                            location.reload();
+                        } else {
+                            showAlert('error', result.message);
+                            closeModal();
+                        }
+                    } else {
+                        showAlert('error', 'Upload failed');
+                        closeModal();
+                    }
+                });
+
+                xhr.addEventListener('error', () => {
+                    showAlert('error', 'Upload failed');
+                    closeModal();
+                });
+
+                xhr.open('POST', '/api/files/upload');
+                xhr.send(formData);
+
+            } catch (error) {
+                showAlert('error', 'Error uploading file: ' + error.message);
+                closeModal();
+            }
+        }
+
+        // === MODAL HANDLERS ===
+        window.onclick = function(event) {
+            const modal = document.getElementById('uploadModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+    
+</body>
+</html>

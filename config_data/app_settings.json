@@ -1,0 +1,14 @@
+{
+  "ors_api_key": "5b3ce3597851110001cf624884b2e062b63f4e349378a238d438a0de",
+  "route_cache_dir": "routes_json",
+  "csv_path_current": "data/travelreport/current.csv",
+  "csv_path_past": "data/travelreport/history.csv",
+  "geojson_path": "analysis/routes_json/path_0_min2_stop6_routes.geojson",
+  "customer_points_path": "analysis/customerpoints/cust_0_min2_stop6_points.csv",
+  "gemini_api_key": "AIzaSyBAF1eMaGtQPokWr3I9pyoqRRUlX4E_HNI",
+  "gemini_model": "models/gemini-2.5-flash-preview-05-20",
+  "alert_followup_url": "https://vehicletrakingserver-production.up.railway.app",
+  "whatsapp_server_url": "https://vehicletrackingwhatsappserverdeploy-production-e9c0.up.railway.app",
+  "openai_api_key": "",
+  "openai_model": ""
+}

@@ -1,0 +1,2627 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Customers - OxyPlus Vehicle Tracking Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 50%, #4CAF50 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-bottles {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .water-bottle {
+            width: 20px;
+            height: 35px;
+            background: linear-gradient(180deg, #2196F3 0%, #21CBF3 100%);
+            border-radius: 3px 3px 8px 8px;
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .water-bottle::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+        }
+
+        .water-bottle:nth-child(1) { animation-delay: 0s; }
+        .water-bottle:nth-child(2) { animation-delay: 0.5s; }
+        .water-bottle:nth-child(3) { animation-delay: 1s; }
+
+        .leaf-icon {
+            color: #4CAF50;
+            font-size: 1.8rem;
+            margin-left: 0.5rem;
+            animation: sway 2s ease-in-out infinite;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #2196F3;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .oxy-plus-text {
+            color: #21CBF3;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .header-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+        }
+
+        .header-btn:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+        }
+
+        .header-btn.back {
+            background: #4CAF50;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+
+        .header-btn.back:hover {
+            background: #388E3C;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page-title {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .page-title h2 {
+            margin: 0 0 1rem 0;
+            color: #2196F3;
+            font-size: 1.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .page-title p {
+            margin: 0;
+            color: #666;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border-left: 5px solid #2196F3;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2196F3;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .filters-section {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1002;
+        }
+
+        .filters-section h3 {
+            color: #2196F3;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            align-items: end;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #2196F3;
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-group input, .filter-group select {
+            padding: 0.75rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .filter-group input:focus, .filter-group select:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        .custom-dropdown {
+            position: relative;
+            width: 100%;
+            z-index: 1005;
+        }
+
+        .dropdown-selected {
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            padding: 0.75rem;
+            background: #fff;
+            cursor: pointer;
+            font-size: 1rem;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-selected:hover {
+            border-color: #2196F3;
+        }
+
+        .dropdown-list {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            max-height: 180px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1006;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .dropdown-item {
+            padding: 0.75rem;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background: #f0f8ff;
+        }
+
+        .dropdown-item input[type="checkbox"] {
+            margin: 0;
+            transform: scale(1.1);
+        }
+
+        .dropdown-footer {
+            padding: 0.75rem;
+            text-align: right;
+            border-top: 1px solid #e1e8ed;
+            background: #f0f8ff;
+            position: relative;
+            z-index: 1003;
+        }
+
+        .dropdown-footer .btn {
+            position: relative;
+            z-index: 1006 !important;
+            pointer-events: auto !important;
+        }
+
+        .switch-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+        }
+
+        .additional-options-container {
+            display: flex;
+            flex-direction: row;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+        }
+
+        .additional-options-container .switch-group {
+            flex: 0 0 auto;
+            white-space: nowrap;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            z-index: 1005;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(33, 150, 243, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(108, 117, 125, 0.4);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            border-radius: 15px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            position: relative;
+            z-index: 1000;
+            margin-top: 1rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+            color: #2196F3;
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            margin: 2rem 0;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .loading i {
+            font-size: 3rem;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        .legend {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .legend h3 {
+            color: #2196F3;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: #f0f8ff;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .map-section {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .map-section h3 {
+            color: #2196F3;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .map-container {
+            width: 100%;
+            height: 650px;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid #e1e8ed;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .map-container .leaflet-container {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .leaflet-container {
+            z-index: 1;
+        }
+        
+        .leaflet-tile-pane {
+            z-index: 200;
+        }
+        
+        .leaflet-overlay-pane {
+            z-index: 400;
+        }
+        
+        .leaflet-marker-pane {
+            z-index: 600;
+        }
+        
+        .leaflet-tooltip-pane {
+            z-index: 650;
+        }
+        
+        .leaflet-popup-pane {
+            z-index: 700;
+        }
+
+        .leaflet-control-container {
+            z-index: 800;
+        }
+
+        .leaflet-tile {
+            filter: none !important;
+        }
+
+        .leaflet-container {
+            background: #f8f9fa;
+        }
+
+        .leaflet-pane {
+            pointer-events: auto;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #2196F3;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .modal-buttons button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-buttons button[type="button"] {
+            background: #6c757d;
+            color: white;
+        }
+
+        .modal-buttons button[type="button"]:hover {
+            background: #5a6268;
+        }
+
+        .modal-buttons button[type="submit"] {
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+            color: white;
+        }
+
+        .modal-buttons button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .brand-footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            color: white;
+        }
+
+        .brand-footer h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .brand-footer p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes sway {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .header-actions {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .logo-section {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .legend-items {
+                grid-template-columns: 1fr;
+            }
+
+            .additional-options-container {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            
+            .additional-options-container .switch-group {
+                width: 100%;
+            }
+
+            .stat-card.whatsapp {
+                border-left: 5px solid #25D366;
+            }
+
+            .stat-card.whatsapp .stat-number {
+                color: #25D366;
+            }
+
+            .whatsapp-legend {
+                background: linear-gradient(45deg, #25D366, #128C7E);
+                border: 2px solid white;
+                box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+            }
+
+            .whatsapp-info {
+                background: rgba(37, 211, 102, 0.1);
+                border: 1px solid #25D366;
+                border-radius: 10px;
+                padding: 1rem;
+                margin: 1rem 0;
+                display: none;
+            }
+
+            .whatsapp-info.show {
+                display: block;
+            }
+
+            .whatsapp-info h4 {
+                color: #25D366;
+                margin: 0 0 0.5rem 0;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .whatsapp-info p {
+                margin: 0.25rem 0;
+                font-size: 0.9rem;
+                color: #128C7E;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>
+            <i class="fas fa-users"></i>
+            Weekly Customers Analysis
+        </h1>
+        <div class="nav-links">
+            <a href="/"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="/daily"><i class="fas fa-route"></i> Route Comparison</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_points }}</div>
+                <div class="stat-label"><i class="fas fa-map-pin"></i> Customer Points</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ total_vehicles }}</div>
+                <div class="stat-label"><i class="fas fa-truck"></i> Active Vehicles</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ total_clusters }}</div>
+                <div class="stat-label"><i class="fas fa-layer-group"></i> Geo Clusters</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ avg_stops }}</div>
+                <div class="stat-label"><i class="fas fa-stop-circle"></i> Avg Stops/Point</div>
+            </div>
+            {% if show_confirmed_customers %}
+            <div class="stat-card" style="border-left: 5px solid #25D366;">
+                <div class="stat-number" style="color: #25D366;">{{ whatsapp_stats.completed_customers }}</div>
+                <div class="stat-label"><i class="fab fa-whatsapp"></i> WhatsApp Customers</div>
+            </div>
+            <div class="stat-card" style="border-left: 5px solid #ffc107;">
+                <div class="stat-number" style="color: #ffc107;">{{ whatsapp_stats.pending_customers }}</div>
+                <div class="stat-label"><i class="fas fa-clock"></i> Pending WhatsApp</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="filters-section">
+            <h3><i class="fas fa-filter"></i> Data Processing & Filters</h3>
+            <form method="GET" id="filterForm">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label for="min_duration"><i class="fas fa-clock"></i> Minimum Duration (minutes)</label>
+                        <input type="number" id="min_duration" name="min_duration" 
+                               value="{{ min_duration }}" min="1" max="60" placeholder="Enter duration">
+                    </div>
+        
+                    <div class="filter-group">
+                        <label for="min_stop_count"><i class="fas fa-calculator"></i> Minimum Stop Count</label>
+                        <input type="number" id="min_stop_count" name="min_stop_count" 
+                               value="{{ min_stop_count }}" min="1" max="50" placeholder="Enter count">
+                    </div>
+        
+                    <div class="filter-group">
+                        <label for="vehicle-dropdown"><i class="fas fa-truck"></i> Select Vehicles</label>
+                        <div class="custom-dropdown" id="vehicles-dropdown">
+                            <div class="dropdown-selected" onclick="toggleDropdown('vehicles')">
+                                {{ selected_vehicles | join(', ') if selected_vehicles else 'Click to select vehicles'}}
+                            </div>
+                            <div class="dropdown-list" id="vehicles-dropdown-list">
+                                {% for vehicle in vehicles %}
+                                <label class="dropdown-item">
+                                    <input type="checkbox" name="vehicles" value="{{ vehicle }}"
+                                           {% if vehicle in selected_vehicles %}checked{% endif %}>
+                                    <i class="fas fa-truck"></i> {{ vehicle_aliases.get(vehicle, vehicle) }} ({{ vehicle }})
+                                </label>
+                                {% endfor %}
+                                <div class="dropdown-footer">
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="applyDropdown('vehicles')">
+                                        <i class="fas fa-check"></i> Apply
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="weekday-dropdown"><i class="fas fa-calendar-week"></i> Select Weekdays</label>
+                        <div class="custom-dropdown" id="weekdays-dropdown">
+                            <div class="dropdown-selected" onclick="toggleDropdown('weekdays')">
+                                {{ selected_weekdays | join(', ') if selected_weekdays else 'Click to select weekdays' }}
+                            </div>
+                            <div class="dropdown-list" id="weekdays-dropdown-list">
+                                {% for day in weekdays %}
+                                <label class="dropdown-item">
+                                    <input type="checkbox" name="weekdays" value="{{ day }}"
+                                           {% if day in selected_weekdays %}checked{% endif %}>
+                                    <i class="fas fa-calendar-day"></i> {{ day }}
+                                </label>
+                                {% endfor %}
+                                <div class="dropdown-footer">
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="applyDropdown('weekdays')">
+                                        <i class="fas fa-check"></i> Apply
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label><i class="fas fa-cogs"></i> Additional Options</label>
+                        <div class="additional-options-container">
+                            <div class="switch-group">
+                                <label class="switch">
+                                    <input type="checkbox" name="segment_areas" id="segment_areas" {% if segment_areas %}checked{% endif %}>
+                                    <span class="slider"></span>
+                                </label>
+                                <label for="segment_areas">Segment Areas</label>
+                            </div>
+                            <div class="switch-group">
+                                <label class="switch">
+                                    <input type="checkbox" name="assign_paths" id="assign_paths" {% if assign_paths %}checked{% endif %}>
+                                    <span class="slider"></span>
+                                </label>
+                                <label for="assign_paths">Assign Paths</label>
+                            </div>
+                            <div class="switch-group">
+                                <label class="switch">
+                                    <input type="checkbox" name="force_assign_path" id="force_assign_path" {% if force_assign_path %}checked{% endif %}>
+                                    <span class="slider"></span>
+                                </label>
+                                <label for="force_assign_path">Force Regenerate Paths</label>
+                            </div>
+                            <div class="switch-group">
+                                <label class="switch">
+                                    <input type="checkbox" name="edit_lists" id="edit_lists" {% if make_edits %}checked{% endif %}>
+                                    <span class="slider"></span>
+                                </label>
+                                <label for="edit_lists">Enable Edit Mode</label>
+                            </div>
+                            <div class="switch-group">
+                                <label class="switch">
+                                    <input type="checkbox" name="show_stop_points" id="show_stop_points" {% if show_stop_points %}checked{% endif %}>
+                                    <span class="slider"></span>
+                                </label>
+                                <label for="show_stop_points">Show Stop/Idle Points</label>
+                            </div>
+                            <div class="switch-group">
+                                <label class="switch">
+                                    <input type="checkbox" name="show_confirmed_customers" id="show_confirmed_customers" {% if show_confirmed_customers %}checked{% endif %}>
+                                    <span class="slider"></span>
+                                </label>
+                                <label for="show_confirmed_customers">Show Confirmed Customers</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filters-grid" id="calendarControls" style="display: {% if show_stop_points %}grid{% else %}none{% endif %};">
+                    <div class="filter-group">
+                        <label for="stop_date"><i class="fas fa-calendar"></i> Select Date for Stop Points</label>
+                        <input type="date" id="stop_date" name="stop_date" 
+                               value="{{ stop_date }}" placeholder="Select date">
+                    </div>
+                </div>
+        
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-refresh"></i> Process & Filter
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="resetFilters()">
+                        <i class="fas fa-times"></i> Reset Filters
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="clearAllCustomerPoints()" style="background: #dc3545;">
+                        <i class="fas fa-trash-alt"></i> Clear All Custom Points
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="loading" id="loading">
+            <i class="fas fa-spinner"></i>
+            <h3>Processing Data...</h3>
+            <p>Analyzing customer patterns and vehicle routes. This may take a few moments.</p>
+        </div>
+
+        {% if vehicle_colors %}
+        <div class="legend">
+            <h3><i class="fas fa-list"></i> Vehicle Legend</h3>
+            <div class="legend-items">
+                {% for vehicle, color in vehicle_colors.items() %}
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: {{ color }};"></div>
+                    <i class="fas fa-truck"></i> {{ vehicle_aliases.get(vehicle, vehicle) }} ({{ vehicle }})
+                </div>
+                {% endfor %}
+                {% if show_confirmed_customers %}
+                <div class="legend-item">
+                    <div class="legend-color whatsapp-legend"></div>
+                    <i class="fab fa-whatsapp"></i> WhatsApp Confirmed Customers
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% if show_confirmed_customers %}
+        <div class="whatsapp-info show">
+            <h4><i class="fab fa-whatsapp"></i> WhatsApp Customer Information</h4>
+            <p><strong>Total Contacts:</strong> {{ whatsapp_stats.total_customers }}</p>
+            <p><strong>Completed Customers:</strong> {{ whatsapp_stats.completed_customers }}</p>
+            <p><strong>Pending Customers:</strong> {{ whatsapp_stats.pending_customers }}</p>
+            <p><i class="fas fa-info-circle"></i> WhatsApp customers are shown with green WhatsApp icons on the map.</p>
+        </div>
+        {% endif %}
+        <div class="map-section">
+            <h3><i class="fas fa-map-marked-alt"></i> Customer Location Map</h3>
+            <div class="map-container" id="map-container">
+                {{ map_html|safe }}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mapInstance = null;
+        let customMarkers = [];
+        let editingMode = false;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMapInteractions();
+            loadExistingCustomerPoints();
+        });
+
+        function initializeMapInteractions() {
+            console.log('Initializing map interactions...');
+            let attempts = 0;
+            let maxAttempts = 10;
+            
+            function tryAttach() {
+                attempts++;
+                console.log(`Attempt ${attempts} to attach map handlers`);
+                
+                let mapEl = document.querySelector('.leaflet-container');
+                if (mapEl) {
+                    console.log('Map element found, attaching handlers');
+                    attachMapClickHandler(mapEl);
+                    attachMarkerEventHandlers();
+                    setTimeout(() => {
+                        editingMode = document.getElementById('edit_lists')?.checked || false;
+                        updateEditingModeIndicator();
+                        console.log('Initial edit mode state:', editingMode);
+                    }, 100);
+                    
+                } else {
+                    console.log('Map element not found yet');
+                    if (attempts < maxAttempts) {
+                        setTimeout(tryAttach, attempts * 500);
+                    } else {
+                        console.error('Failed to find map element after', maxAttempts, 'attempts');
+                    }
+                }
+            }
+            tryAttach();
+        }
+        document.getElementById('show_confirmed_customers').addEventListener('change', function() {
+            const whatsappInfo = document.querySelector('.whatsapp-info');
+            if (whatsappInfo) {
+                whatsappInfo.style.display = this.checked ? 'block' : 'none';
+            }
+
+            if (this.checked) {
+                showNotification('WhatsApp customer data will be loaded and displayed on the map', 'info');
+            } else {
+                showNotification('WhatsApp customer data will be hidden', 'warning');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const whatsappToggle = document.getElementById('show_confirmed_customers');
+            const whatsappInfo = document.querySelector('.whatsapp-info');
+            
+            if (whatsappInfo && whatsappToggle) {
+                whatsappInfo.style.display = whatsappToggle.checked ? 'block' : 'none';
+            }
+        });
+        function attachMapClickHandler(mapEl) {
+            let isDragging = false;
+            let startX, startY;
+            let dragThreshold = 5;
+
+            mapEl.addEventListener('mousedown', function(e) {
+                isDragging = false;
+                startX = e.clientX;
+                startY = e.clientY;
+                console.log('Mouse down detected');
+            });
+
+            mapEl.addEventListener('mousemove', function(e) {
+                if (startX !== undefined && startY !== undefined) {
+                    let deltaX = Math.abs(e.clientX - startX);
+                    let deltaY = Math.abs(e.clientY - startY);
+                    if (deltaX > dragThreshold || deltaY > dragThreshold) {
+                        isDragging = true;
+                    }
+                }
+            });
+
+            mapEl.addEventListener('mouseup', function(e) {
+                setTimeout(() => {
+                    startX = undefined;
+                    startY = undefined;
+                }, 50);
+            });
+
+            mapEl.addEventListener('click', function(e) {
+                console.log('Map clicked, editingMode:', editingMode, 'isDragging:', isDragging);
+                
+                if (!editingMode) {
+                    console.log('Edit mode not enabled');
+                    return;
+                }
+
+                if (isDragging) {
+                    console.log('Click ignored due to dragging');
+                    return;
+                }
+
+                let target = e.target;
+                let isMarkerClick = false;
+
+                while (target && target !== mapEl) {
+                    if (target.classList.contains('leaflet-marker-icon') || 
+                        target.classList.contains('leaflet-popup') ||
+                        target.classList.contains('leaflet-popup-content') ||
+                        target.classList.contains('leaflet-marker-pane') ||
+                        target.classList.contains('leaflet-interactive') ||
+                        target.tagName === 'BUTTON' ||
+                        target.closest('.leaflet-popup')) {
+                        isMarkerClick = true;
+                        console.log('Click on marker/popup detected');
+                        break;
+                    }
+                    target = target.parentElement;
+                }
+
+                if (!isMarkerClick) {
+                    console.log('Valid map click for adding point');
+                    let rect = mapEl.getBoundingClientRect();
+                    let x = e.clientX - rect.left;
+                    let y = e.clientY - rect.top;
+                    
+                    console.log('Click coordinates:', x, y);
+                    
+                    convertPixelToLatLng(x, y, function(lat, lng) {
+                        console.log('Converted to lat/lng:', lat, lng);
+                        if (lat && lng) {
+                            showAddCustomerModal(lat, lng);
+                        } else {
+                            console.error('Failed to convert coordinates');
+                            showNotification('Failed to get coordinates. Try clicking again.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+        function convertPixelToLatLng(x, y, callback) {
+            try {
+                let leafletMap = null;
+                if (window._leaflet_map) {
+                    leafletMap = window._leaflet_map;
+                }
+                if (!leafletMap) {
+                    let mapEl = document.querySelector('.leaflet-container');
+                    if (mapEl && mapEl._leaflet_map) {
+                        leafletMap = mapEl._leaflet_map;
+                        window._leaflet_map = leafletMap;
+                    }
+                }
+                if (!leafletMap) {
+                    const possibleMaps = ['map', 'myMap', 'leafletMap', 'mapInstance'];
+                    for (let mapVar of possibleMaps) {
+                        if (window[mapVar] && window[mapVar].containerPointToLatLng) {
+                            leafletMap = window[mapVar];
+                            window._leaflet_map = leafletMap;
+                            break;
+                        }
+                    }
+                }
+                if (!leafletMap) {
+                    for (let prop in window) {
+                        try {
+                            if (window[prop] && 
+                                typeof window[prop] === 'object' && 
+                                window[prop].containerPointToLatLng &&
+                                window[prop]._container) {
+                                leafletMap = window[prop];
+                                window._leaflet_map = leafletMap;
+                                console.log('Found map in window.' + prop);
+                                break;
+                            }
+                        } catch (e) {
+
+                        }
+                    }
+                }
+                if (!leafletMap && window.L && window.L._getMapById) {
+                    try {
+                        leafletMap = window.L._getMapById(0);
+                    } catch (e) {
+                        console.log('L._getMapById failed');
+                    }
+                }
+                if (leafletMap && leafletMap.containerPointToLatLng) {
+                    console.log('Map found, converting coordinates');
+                    let latlng = leafletMap.containerPointToLatLng([x, y]);
+                    console.log('Converted coordinates:', latlng);
+                    callback(latlng.lat, latlng.lng);
+                } else {
+                    console.error('No Leaflet map instance found. Available window properties:');
+                    console.log(Object.keys(window).filter(key => key.toLowerCase().includes('map')));
+
+                    let mapEl = document.querySelector('.leaflet-container');
+                    if (mapEl) {
+                        console.log('Trying fallback coordinate estimation...');
+                        let rect = mapEl.getBoundingClientRect();
+                        let lat = 25.276987 + (rect.height/2 - y) * 0.0001;
+                        let lng = 55.296249 + (x - rect.width/2) * 0.0001;
+                        console.log('Estimated coordinates:', lat, lng);
+                        callback(lat, lng);
+                    } else {
+                        callback(null, null);
+                    }
+                }
+            } catch (error) {
+                console.error('Error converting pixel to coordinates:', error);
+                callback(null, null);
+            }
+        }
+        function removeOriginalPoint(data) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryString = urlParams.toString();
+            
+            fetch(`/api/remove-original-point?${queryString}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    latitude: data.lat,
+                    longitude: data.lon,
+                    vehicle_id: data.vehicle,
+                    weekday: data.weekday
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    showNotification('Original point permanently deleted', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showNotification('Failed to delete point: ' + result.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting point:', error);
+                showNotification('Error deleting point', 'error');
+            });
+        }
+
+        function generate_customer_id() {
+            return 'CUST_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        }
+        function updateOriginalPointInBackend(data) {
+            fetch('/api/edit-original-point', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    showNotification('Customer info saved to system', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showNotification('Failed to save customer info: ' + result.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving customer info:', error);
+                showNotification('Error saving customer info', 'error');
+            });
+        }
+        function showEditPointModal(data) {
+            showEditOriginalPointModal(data);
+        }
+        function attachMarkerEventHandlers() {
+            document.addEventListener('click', function(e) {
+                console.log('Click event on:', e.target);
+                console.log('Target classes:', e.target.classList);
+                
+                if (e.target.classList.contains('edit-custom-point-btn')) {
+                    let data = extractButtonData(e.target);
+                    showEditCustomerModal(data);
+                }
+                
+                if (e.target.classList.contains('remove-custom-point-btn')) {
+                    let customerId = e.target.getAttribute('data-customer-id');
+                    if (confirm('Remove this customer point?')) {
+                        removeCustomerPoint(customerId);
+                    }
+                }
+
+                if (e.target.classList.contains('edit-point-btn')) {
+                    let data = extractButtonData(e.target);
+                    showEditOriginalPointModal(data);
+                }
+ 
+                if (e.target.classList.contains('remove-point-btn')) {
+                    let data = extractButtonData(e.target);
+                    if (confirm('Remove this original point?')) {
+                        removeOriginalPoint(data);
+                    }
+                }
+                
+                
+            });
+
+            const mapContainer = document.getElementById('map-container');
+            if (mapContainer) {
+                mapContainer.addEventListener('click', function(e) {
+                    console.log('Map container click event on:', e.target);
+                    console.log('Map target classes:', e.target.classList);
+                    
+                    
+                });
+            }
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList') {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === 1) {
+
+                                
+
+                            }
+                        });
+                    }
+                });
+            });
+
+            if (mapContainer) {
+                observer.observe(mapContainer, {
+                    childList: true,
+                    subtree: true
+                });
+            }
+        }
+
+        function extractButtonData(button) {
+            return {
+                customerId: button.getAttribute('data-customer-id'),
+                lat: parseFloat(button.getAttribute('data-lat')),
+                lon: parseFloat(button.getAttribute('data-lon')),
+                vehicle: button.getAttribute('data-vehicle'),
+                weekday: button.getAttribute('data-weekday'),
+                name: button.getAttribute('data-name') || '',
+                contact: button.getAttribute('data-contact') || '',
+                description: button.getAttribute('data-description') || ''
+            };
+        }
+
+        function toggleDropdown(type) {
+            const list = document.getElementById(`${type}-dropdown-list`);
+            const isVisible = list.style.display === 'block';
+
+            document.querySelectorAll('.dropdown-list').forEach(dl => {
+                dl.style.display = 'none';
+            });
+
+            list.style.display = isVisible ? 'none' : 'block';
+        }
+
+        function applyDropdown(type) {
+            const checkboxes = document.querySelectorAll(`#${type}-dropdown-list input[type="checkbox"]:checked`);
+            const selected = Array.from(checkboxes).map(cb => cb.value);
+            const selectedDisplay = document.querySelector(`#${type}-dropdown .dropdown-selected`);
+            
+            if (selected.length === 0) {
+                selectedDisplay.textContent = `Click to select ${type}`;
+            } else {
+                selectedDisplay.textContent = selected.join(', ');
+            }
+            
+            document.getElementById(`${type}-dropdown-list`).style.display = 'none';
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.custom-dropdown')) {
+                document.querySelectorAll('.dropdown-list').forEach(dl => {
+                    dl.style.display = 'none';
+                });
+            }
+        });
+
+        document.getElementById('show_stop_points').addEventListener('change', function() {
+            const calendarControls = document.getElementById('calendarControls');
+            calendarControls.style.display = this.checked ? 'grid' : 'none';
+        });
+
+        document.getElementById('edit_lists').addEventListener('change', function() {
+            editingMode = this.checked;
+            updateEditingModeIndicator();
+        });
+
+        function updateEditingModeIndicator() {
+            const mapContainer = document.getElementById('map-container');
+            if (editingMode) {
+                mapContainer.style.border = '3px solid #28a745';
+                mapContainer.style.cursor = 'crosshair';
+                showNotification('Edit mode enabled. Click on map to add customer points.', 'success');
+            } else {
+                mapContainer.style.border = '1px solid #e1e8ed';
+                mapContainer.style.cursor = 'default';
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                ${message}
+            `;
+
+            if (!document.getElementById('notification-styles')) {
+                const styles = document.createElement('style');
+                styles.id = 'notification-styles';
+                styles.textContent = `
+                    .notification {
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        padding: 1rem 1.5rem;
+                        border-radius: 8px;
+                        color: white;
+                        font-weight: 500;
+                        z-index: 10000;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                        max-width: 400px;
+                        animation: slideIn 0.3s ease;
+                    }
+                    .notification-success { background: #28a745; }
+                    .notification-error { background: #dc3545; }
+                    .notification-warning { background: #ffc107; color: #333; }
+                    .notification-info { background: #17a2b8; }
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(styles);
+            }
+            
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
+        }
+
+        function showAddCustomerModal(lat, lng) {
+            const modal = createModal('Add Customer Point', `
+                <div class="form-group">
+                    <label for="customer-id">Customer ID *</label>
+                    <input type="text" id="customer-id" placeholder="Enter customer ID" required>
+                </div>
+                <div class="form-group">
+                    <label for="customer-name">Customer Name</label>
+                    <input type="text" id="customer-name" placeholder="Enter customer name">
+                </div>
+                <div class="form-group">
+                    <label for="customer-contact">Contact Information</label>
+                    <input type="text" id="customer-contact" placeholder="Phone, email, etc.">
+                </div>
+                <div class="form-group">
+                    <label for="customer-description">Description/Address</label>
+                    <textarea id="customer-description" rows="3" placeholder="Additional details or address"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="customer-vehicle">Vehicle</label>
+                    <select id="customer-vehicle">
+                        ${getVehicleOptions()}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="customer-weekday">Weekday</label>
+                    <select id="customer-weekday">
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                        <option value="Sunday">Sunday</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Coordinates</label>
+                    <input type="text" value="${lat.toFixed(6)}, ${lng.toFixed(6)}" readonly style="background: #f8f9fa;">
+                </div>
+            `, function() {
+                const customerId = document.getElementById('customer-id').value.trim();
+                if (!customerId) {
+                    showNotification('Customer ID is required', 'error');
+                    return;
+                }
+                
+                const data = {
+                    customer_id: customerId,
+                    customer_name: document.getElementById('customer-name').value,
+                    customer_contact: document.getElementById('customer-contact').value,
+                    description: document.getElementById('customer-description').value,
+                    vehicle_id: document.getElementById('customer-vehicle').value,
+                    weekday: document.getElementById('customer-weekday').value,
+                    latitude: lat,
+                    longitude: lng
+                };
+                
+                if (!data.vehicle_id) {
+                    showNotification('Please select a vehicle', 'error');
+                    return;
+                }
+                
+                addCustomerPointToMap(data);
+                addCustomerPointToBackend(data);
+                modal.remove();
+            });
+        }
+        function showEditOriginalPointModal(data) {
+            const modal = createModal('Edit Original Point', `
+                <div class="form-group">
+                    <label for="edit-original-customer-id">Customer ID *</label>
+                    <input type="text" id="edit-original-customer-id" placeholder="Enter customer ID" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-original-customer-name">Customer Name</label>
+                    <input type="text" id="edit-original-customer-name" value="${data.name || ''}">
+                </div>
+                <div class="form-group">
+                    <label for="edit-original-customer-contact">Contact Information</label>
+                    <input type="text" id="edit-original-customer-contact" value="${data.contact || ''}">
+                </div>
+                <div class="form-group">
+                    <label for="edit-original-description">Description/Address</label>
+                    <textarea id="edit-original-description" rows="3">${data.description || ''}</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="edit-original-vehicle">Vehicle</label>
+                    <select id="edit-original-vehicle">
+                        ${getVehicleOptions(data.vehicle)}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-original-weekday">Weekday</label>
+                    <select id="edit-original-weekday">
+                        <option value="Monday" ${data.weekday === 'Monday' ? 'selected' : ''}>Monday</option>
+                        <option value="Tuesday" ${data.weekday === 'Tuesday' ? 'selected' : ''}>Tuesday</option>
+                        <option value="Wednesday" ${data.weekday === 'Wednesday' ? 'selected' : ''}>Wednesday</option>
+                        <option value="Thursday" ${data.weekday === 'Thursday' ? 'selected' : ''}>Thursday</option>
+                        <option value="Friday" ${data.weekday === 'Friday' ? 'selected' : ''}>Friday</option>
+                        <option value="Saturday" ${data.weekday === 'Saturday' ? 'selected' : ''}>Saturday</option>
+                        <option value="Sunday" ${data.weekday === 'Sunday' ? 'selected' : ''}>Sunday</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Coordinates</label>
+                    <input type="text" value="${data.lat.toFixed(6)}, ${data.lon.toFixed(6)}" readonly style="background: #f8f9fa;">
+                </div>
+            `, function() {
+                const customerId = document.getElementById('edit-original-customer-id').value.trim();
+                if (!customerId) {
+                    showNotification('Customer ID is required', 'error');
+                    return;
+                }
+                
+                const updatedData = {
+                    customer_id: customerId,
+                    customer_name: document.getElementById('edit-original-customer-name').value,
+                    customer_contact: document.getElementById('edit-original-customer-contact').value,
+                    description: document.getElementById('edit-original-description').value,
+                    vehicle_id: document.getElementById('edit-original-vehicle').value,
+                    weekday: document.getElementById('edit-original-weekday').value,
+                    latitude: data.lat,
+                    longitude: data.lon
+                };
+                
+                updateOriginalPointInBackend(updatedData);
+                modal.remove();
+            });
+        }
+        function showEditCustomerModal(data) {
+            const modal = createModal('Edit Customer Point', `
+                <div class="form-group">
+                    <label for="edit-customer-name">Customer Name</label>
+                    <input type="text" id="edit-customer-name" value="${data.name || ''}">
+                </div>
+                <div class="form-group">
+                    <label for="edit-customer-contact">Contact Information</label>
+                    <input type="text" id="edit-customer-contact" value="${data.contact || ''}">
+                </div>
+                <div class="form-group">
+                    <label for="edit-customer-description">Description/Address</label>
+                    <textarea id="edit-customer-description" rows="3">${data.description || ''}</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="edit-customer-vehicle">Vehicle</label>
+                    <select id="edit-customer-vehicle">
+                        ${getVehicleOptions(data.vehicle)}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-customer-weekday">Weekday</label>
+                    <select id="edit-customer-weekday">
+                        <option value="Monday" ${data.weekday === 'Monday' ? 'selected' : ''}>Monday</option>
+                        <option value="Tuesday" ${data.weekday === 'Tuesday' ? 'selected' : ''}>Tuesday</option>
+                        <option value="Wednesday" ${data.weekday === 'Wednesday' ? 'selected' : ''}>Wednesday</option>
+                        <option value="Thursday" ${data.weekday === 'Thursday' ? 'selected' : ''}>Thursday</option>
+                        <option value="Friday" ${data.weekday === 'Friday' ? 'selected' : ''}>Friday</option>
+                        <option value="Saturday" ${data.weekday === 'Saturday' ? 'selected' : ''}>Saturday</option>
+                        <option value="Sunday" ${data.weekday === 'Sunday' ? 'selected' : ''}>Sunday</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Coordinates</label>
+                    <input type="text" value="${data.lat.toFixed(6)}, ${data.lon.toFixed(6)}" readonly style="background: #f8f9fa;">
+                </div>
+            `, function() {
+                const updatedData = {
+                    customer_id: data.customerId,
+                    customer_name: document.getElementById('edit-customer-name').value,
+                    customer_contact: document.getElementById('edit-customer-contact').value,
+                    description: document.getElementById('edit-customer-description').value,
+                    vehicle_id: document.getElementById('edit-customer-vehicle').value,
+                    weekday: document.getElementById('edit-customer-weekday').value,
+                    latitude: data.lat,
+                    longitude: data.lon
+                };
+                
+                updateCustomerPointOnMap(data.customerId, updatedData);
+                updateCustomerPointInBackend(updatedData);
+                modal.remove();
+            });
+        }
+
+        function showEditPointModal(data) {
+            showNotification('Original points cannot be edited. Only custom customer points can be modified.', 'warning');
+        }
+
+        function createModal(title, content, onSave) {
+            const existingModal = document.getElementById('customer-modal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            const modal = document.createElement('div');
+            modal.id = 'customer-modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10001;
+                backdrop-filter: blur(5px);
+            `;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: white;
+                    border-radius: 15px;
+                    padding: 2rem;
+                    max-width: 500px;
+                    width: 90%;
+                    max-height: 90vh;
+                    overflow-y: auto;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                ">
+                    <h2 style="margin: 0 0 1.5rem 0; color: #2c5aa0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-map-pin"></i> ${title}
+                    </h2>
+                    ${content}
+                    <div class="modal-buttons">
+                        <button type="button" onclick="document.getElementById('customer-modal').remove()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button type="submit" id="modal-save-btn">
+                            <i class="fas fa-save"></i> Save
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+
+            document.getElementById('modal-save-btn').addEventListener('click', onSave);
+
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+            
+            return modal;
+        }
+
+        function getVehicleOptions(selectedVehicle = '') {
+            const vehicleCheckboxes = document.querySelectorAll('#vehicles-dropdown-list input[type="checkbox"]');
+            let options = '';
+            
+            vehicleCheckboxes.forEach(checkbox => {
+                const value = checkbox.value;
+                const label = checkbox.parentElement.textContent.trim();
+                const selected = value === selectedVehicle ? 'selected' : '';
+                options += `<option value="${value}" ${selected}>${label}</option>`;
+            });
+            
+            return options || '<option value="">No vehicles available</option>';
+        }
+
+        function addCustomerPointToMap(data) {
+            const customerId = 'TEMP_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+            const vehicleColors = getVehicleColors();
+            const vehicleAliases = getVehicleAliases();
+            const color = vehicleColors[data.vehicle_id] || '#6c757d';
+            const alias = vehicleAliases[data.vehicle_id] || data.vehicle_id;
+
+            try {
+                const leafletMap = getLeafletMap();
+                if (leafletMap) {
+                    const markerIcon = L.divIcon({
+                        html: createPinMarkerHTML(color, 18, 0.8, 'custom_point'),
+                        className: 'custom-div-icon',
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 20]
+                    });
+                    
+                    const popupContent = createCustomerPopupContent(data, customerId, alias, color, true);
+                    const tooltipContent = `${data.customer_name || 'Custom Point'} - ${alias} - ${data.weekday}`;
+                    
+                    const marker = L.marker([data.latitude, data.longitude], { icon: markerIcon })
+                        .bindPopup(popupContent, { maxWidth: 350 })
+                        .bindTooltip(tooltipContent, { permanent: false })
+                        .addTo(leafletMap);
+
+                    customMarkers.push({
+                        id: customerId,
+                        marker: marker,
+                        data: data
+                    });
+                    
+                    showNotification(`Customer point added for ${alias} on ${data.weekday}`, 'success');
+                }
+            } catch (error) {
+                console.error('Error adding marker to map:', error);
+                showNotification('Added customer point (map will refresh on next load)', 'info');
+            }
+        }
+
+        function updateCustomerPointOnMap(customerId, updatedData) {
+            const markerRef = customMarkers.find(m => m.id === customerId);
+            if (markerRef && markerRef.marker) {
+                try {
+                    const leafletMap = getLeafletMap();
+                    if (leafletMap) {
+                        leafletMap.removeLayer(markerRef.marker);
+
+                        const vehicleColors = getVehicleColors();
+                        const vehicleAliases = getVehicleAliases();
+                        const color = vehicleColors[updatedData.vehicle_id] || '#6c757d';
+                        const alias = vehicleAliases[updatedData.vehicle_id] || updatedData.vehicle_id;
+                        
+                        const markerIcon = L.divIcon({
+                            html: createPinMarkerHTML(color, 18, 0.8, 'custom_point'),
+                            className: 'custom-div-icon',
+                            iconSize: [20, 20],
+                            iconAnchor: [10, 20]
+                        });
+                        
+                        const popupContent = createCustomerPopupContent(updatedData, customerId, alias, color, true);
+                        const tooltipContent = `${updatedData.customer_name || 'Custom Point'} - ${alias} - ${updatedData.weekday}`;
+                        
+                        const newMarker = L.marker([updatedData.latitude, updatedData.longitude], { icon: markerIcon })
+                            .bindPopup(popupContent, { maxWidth: 350 })
+                            .bindTooltip(tooltipContent, { permanent: false })
+                            .addTo(leafletMap);
+
+                        markerRef.marker = newMarker;
+                        markerRef.data = updatedData;
+                        
+                        showNotification('Customer point updated successfully', 'success');
+                    }
+                } catch (error) {
+                    console.error('Error updating marker:', error);
+                    showNotification('Customer point updated (map will refresh on next load)', 'info');
+                }
+            }
+        }
+
+        function removeCustomerPointFromMap(customerId) {
+            const markerIndex = customMarkers.findIndex(m => m.id === customerId);
+            if (markerIndex !== -1) {
+                try {
+                    const leafletMap = getLeafletMap();
+                    if (leafletMap && customMarkers[markerIndex].marker) {
+                        leafletMap.removeLayer(customMarkers[markerIndex].marker);
+                    }
+                    customMarkers.splice(markerIndex, 1);
+                    showNotification('Customer point removed', 'success');
+                } catch (error) {
+                    console.error('Error removing marker:', error);
+                    showNotification('Customer point removed (map will refresh on next load)', 'info');
+                }
+            }
+        }
+
+        function createCustomerPopupContent(data, customerId, alias, color, isCustom = true) {
+            return `
+                <div style="font-family: Arial; font-size: 12px; min-width: 250px;">
+                    <b>Vehicle:</b> ${alias} (${data.vehicle_id})<br>
+                    ${data.customer_name ? `<b>Customer:</b> ${data.customer_name}<br>` : ''}
+                    ${data.customer_contact ? `<b>Contact:</b> ${data.customer_contact}<br>` : ''}
+                    <b>Day:</b> ${data.weekday}<br>
+                    <b>Stop Count:</b> 1<br>
+                    <b>Coordinates:</b> ${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)}<br>
+                    <b>Address:</b> ${data.description || 'Custom Customer Point'}<br>
+                    ${isCustom ? '<b><i class="fas fa-star"></i> Custom Point</b><br>' : ''}
+                    <hr style="margin: 10px 0;">
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="edit-custom-point-btn" 
+                                data-customer-id="${customerId}"
+                                data-lat="${data.latitude}" 
+                                data-lon="${data.longitude}" 
+                                data-vehicle="${data.vehicle_id}" 
+                                data-weekday="${data.weekday}"
+                                data-name="${data.customer_name || ''}"
+                                data-contact="${data.customer_contact || ''}"
+                                data-description="${data.description || ''}"
+                                style="background: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; flex: 1;">
+                            <i class="fas fa-edit"></i> Edit Customer
+                        </button>
+                        <button class="remove-custom-point-btn" 
+                                data-customer-id="${customerId}"
+                                style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; flex: 1;">
+                            <i class="fas fa-trash"></i> Remove Customer
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createPinMarkerHTML(color, size = 18, opacity = 0.8, type = 'customer_point') {
+            const iconClass = type === 'custom_point' ? 'fas fa-star' : 'fas fa-map-pin';
+            return `
+                <div style="
+                    background: ${color};
+                    width: ${size}px;
+                    height: ${size}px;
+                    border-radius: 50% 50% 50% 0;
+                    border: 2px solid white;
+                    transform: rotate(-45deg);
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    opacity: ${opacity};
+                ">
+                    <i class="${iconClass}" style="
+                        color: white;
+                        font-size: ${size * 0.5}px;
+                        transform: rotate(45deg);
+                        text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+                    "></i>
+                </div>
+            `;
+        }
+
+        function getLeafletMap() {
+            try {
+                if (window._leaflet_map) {
+                    return window._leaflet_map;
+                }
+
+                const mapEl = document.querySelector('.leaflet-container');
+                if (mapEl && mapEl._leaflet_map) {
+                    window._leaflet_map = mapEl._leaflet_map;
+                    return mapEl._leaflet_map;
+                }
+                
+                return null;
+            } catch (error) {
+                console.error('Error getting Leaflet map:', error);
+                return null;
+            }
+        }
+
+        function getVehicleColors() {
+            const vehicleColors = {};
+            document.querySelectorAll('.legend-item').forEach(item => {
+                const colorEl = item.querySelector('.legend-color');
+                const text = item.textContent.trim();
+                const vehicleMatch = text.match(/\(([^)]+)\)$/);
+                if (vehicleMatch && colorEl) {
+                    const vehicleId = vehicleMatch[1];
+                    const color = colorEl.style.backgroundColor;
+                    vehicleColors[vehicleId] = color;
+                }
+            });
+            return vehicleColors;
+        }
+
+        function getVehicleAliases() {
+            const vehicleAliases = {};
+            document.querySelectorAll('.legend-item').forEach(item => {
+                const text = item.textContent.trim();
+                const match = text.match(/(.+?)\s+\(([^)]+)\)$/);
+                if (match) {
+                    const alias = match[1].replace(/🚛\s*/, '').trim();
+                    const vehicleId = match[2];
+                    vehicleAliases[vehicleId] = alias;
+                }
+            });
+            return vehicleAliases;
+        }
+
+        function addCustomerPointToBackend(data) {
+            fetch('/api/add-customer-point', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    const tempMarker = customMarkers.find(m => m.data.latitude === data.latitude && m.data.longitude === data.longitude);
+                    if (tempMarker) {
+                        tempMarker.id = result.customer_id;
+                    }
+                    console.log('Customer point saved to backend:', result);
+                } else {
+                    console.error('Failed to save customer point:', result.error);
+                    showNotification('Failed to save customer point: ' + result.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving customer point:', error);
+                showNotification('Error saving customer point (offline mode)', 'warning');
+            });
+        }
+
+        function updateCustomerPointInBackend(data) {
+            fetch('/api/edit-customer-point', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    console.log('Customer point updated in backend:', result);
+                } else {
+                    console.error('Failed to update customer point:', result.error);
+                    showNotification('Failed to update customer point: ' + result.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating customer point:', error);
+                showNotification('Error updating customer point (offline mode)', 'warning');
+            });
+        }
+
+        function removeCustomerPoint(customerId) {
+            removeCustomerPointFromMap(customerId);
+            fetch('/api/remove-customer-point', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ customer_id: customerId })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    console.log('Customer point removed from backend:', result);
+                } else {
+                    console.error('Failed to remove customer point:', result.error);
+                    showNotification('Failed to remove customer point: ' + result.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error removing customer point:', error);
+                showNotification('Error removing customer point (offline mode)', 'warning');
+            });
+        }
+
+
+
+        function clearAllCustomerPoints() {
+            if (!confirm('Are you sure you want to clear all custom customer points? This action cannot be undone.')) {
+                return;
+            }
+
+            customMarkers.forEach(markerRef => {
+                try {
+                    const leafletMap = getLeafletMap();
+                    if (leafletMap && markerRef.marker) {
+                        leafletMap.removeLayer(markerRef.marker);
+                    }
+                } catch (error) {
+                    console.error('Error removing marker:', error);
+                }
+            });
+            customMarkers = [];
+            fetch('/api/clear-all-edits', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    showNotification('All custom customer points cleared', 'success');
+                } else {
+                    console.error('Failed to clear customer points:', result.error);
+                    showNotification('Failed to clear customer points: ' + result.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error clearing customer points:', error);
+                showNotification('Error clearing customer points (offline mode)', 'warning');
+            });
+        }
+
+        function loadExistingCustomerPoints() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const vehicles = urlParams.getAll('vehicles');
+            const weekdays = urlParams.getAll('weekdays');
+            
+            const queryParams = new URLSearchParams();
+            vehicles.forEach(v => queryParams.append('vehicles', v));
+            weekdays.forEach(w => queryParams.append('weekdays', w));
+            
+            fetch(`/api/get-customer-points?${queryParams.toString()}`)
+            .then(response => response.json())
+            .then(result => {
+                if (result.success && result.points) {
+                    console.log(`Loaded ${result.count} existing custom customer points`);
+                } else {
+                    console.log('No existing custom customer points found');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading existing customer points:', error);
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById('min_duration').value = '';
+            document.getElementById('min_stop_count').value = '';
+            document.getElementById('stop_date').value = '';
+
+            document.querySelectorAll('.dropdown-list input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+
+            document.querySelector('#vehicles-dropdown .dropdown-selected').textContent = 'Click to select vehicles';
+            document.querySelector('#weekdays-dropdown .dropdown-selected').textContent = 'Click to select weekdays';
+
+            document.querySelectorAll('.switch input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+
+            document.getElementById('calendarControls').style.display = 'none';
+
+            const whatsappInfo = document.querySelector('.whatsapp-info');
+            if (whatsappInfo) {
+                whatsappInfo.style.display = 'none';
+            }
+            editingMode = false;
+            updateEditingModeIndicator();
+            
+            showNotification('Filters reset to default values', 'info');
+        }
+
+        document.getElementById('filterForm').addEventListener('submit', function(e) {
+            const loading = document.getElementById('loading');
+            loading.classList.add('show');
+
+            setTimeout(() => {
+                loading.classList.remove('show');
+            }, 3000);
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                editingMode = document.getElementById('edit_lists').checked;
+                updateEditingModeIndicator();
+            }, 500);
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('customer-modal');
+                if (modal) {
+                    modal.remove();
+                }
+
+                document.querySelectorAll('.dropdown-list').forEach(dl => {
+                    dl.style.display = 'none';
+                });
+            }
+
+            if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                const editCheckbox = document.getElementById('edit_lists');
+                editCheckbox.checked = !editCheckbox.checked;
+                editingMode = editCheckbox.checked;
+                updateEditingModeIndicator();
+            }
+        });
+
+        window.addEventListener('error', function(e) {
+            if (e.message.includes('Leaflet') || e.message.includes('map')) {
+                console.warn('Map interaction error:', e.message);
+            }
+        });
+
+        let autoSaveTimeout;
+        function autoSaveFormData() {
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(() => {
+                const formData = new FormData(document.getElementById('filterForm'));
+                const data = Object.fromEntries(formData.entries());
+                localStorage.setItem('filterFormData', JSON.stringify(data));
+            }, 1000);
+        }
+
+        function restoreFormData() {
+            try {
+                const savedData = localStorage.getItem('filterFormData');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    Object.keys(data).forEach(key => {
+                        const element = document.querySelector(`[name="${key}"]`);
+                        if (element) {
+                            if (element.type === 'checkbox') {
+                                element.checked = data[key] === element.value;
+                            } else {
+                                element.value = data[key];
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.warn('Could not restore form data:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            restoreFormData();
+
+            const formElements = document.querySelectorAll('#filterForm input, #filterForm select');
+            formElements.forEach(element => {
+                element.addEventListener('change', autoSaveFormData);
+                element.addEventListener('input', autoSaveFormData);
+            });
+        });
+
+        function centerMapOnCustomerPoints() {
+            try {
+                const leafletMap = getLeafletMap();
+                if (leafletMap && customMarkers.length > 0) {
+                    const group = new L.featureGroup(customMarkers.map(m => m.marker));
+                    leafletMap.fitBounds(group.getBounds().pad(0.1));
+                    showNotification('Map centered on custom customer points', 'info');
+                }
+            } catch (error) {
+                console.error('Error centering map:', error);
+            }
+        }
+
+        function exportCustomerPoints() {
+            if (customMarkers.length === 0) {
+                showNotification('No custom customer points to export', 'warning');
+                return;
+            }
+            
+            const exportData = customMarkers.map(markerRef => ({
+                customer_name: markerRef.data.customer_name || '',
+                customer_contact: markerRef.data.customer_contact || '',
+                description: markerRef.data.description || '',
+                vehicle_id: markerRef.data.vehicle_id,
+                weekday: markerRef.data.weekday,
+                latitude: markerRef.data.latitude,
+                longitude: markerRef.data.longitude,
+                created_at: new Date().toISOString()
+            }));
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `custom_customer_points_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification(`Exported ${customMarkers.length} customer points`, 'success');
+        }
+
+        function importCustomerPoints(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!Array.isArray(data)) {
+                        throw new Error('Invalid file format');
+                    }
+                    
+                    let importCount = 0;
+                    data.forEach(point => {
+                        if (point.latitude && point.longitude && point.vehicle_id && point.weekday) {
+                            addCustomerPointToMap(point);
+                            addCustomerPointToBackend(point);
+                            importCount++;
+                        }
+                    });
+                    
+                    showNotification(`Imported ${importCount} customer points`, 'success');
+                } catch (error) {
+                    console.error('Import error:', error);
+                    showNotification('Error importing customer points: Invalid file format', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function addAdvancedControls() {
+            const buttonGroup = document.querySelector('.button-group');
+            if (buttonGroup && customMarkers.length > 0) {
+                const exportBtn = document.createElement('button');
+                exportBtn.type = 'button';
+                exportBtn.className = 'btn btn-secondary';
+                exportBtn.innerHTML = '<i class="fas fa-download"></i> Export Points';
+                exportBtn.onclick = exportCustomerPoints;
+
+                const centerBtn = document.createElement('button');
+                centerBtn.type = 'button';
+                centerBtn.className = 'btn btn-secondary';
+                centerBtn.innerHTML = '<i class="fas fa-crosshairs"></i> Center on Custom Points';
+                centerBtn.onclick = centerMapOnCustomerPoints;
+
+                const importBtn = document.createElement('button');
+                importBtn.type = 'button';
+                importBtn.className = 'btn btn-secondary';
+                importBtn.innerHTML = '<i class="fas fa-upload"></i> Import Points';
+                
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '.json';
+                fileInput.style.display = 'none';
+                fileInput.onchange = importCustomerPoints;
+                
+                importBtn.onclick = () => fileInput.click();
+
+                if (!buttonGroup.querySelector('.export-btn')) {
+                    buttonGroup.appendChild(exportBtn);
+                    buttonGroup.appendChild(centerBtn);
+                    buttonGroup.appendChild(importBtn);
+                    buttonGroup.appendChild(fileInput);
+
+                    exportBtn.classList.add('export-btn');
+                }
+            }
+        }
+
+        function updateAdvancedControls() {
+            setTimeout(addAdvancedControls, 100);
+        }
+
+        function optimizeMapPerformance() {
+            try {
+                const leafletMap = getLeafletMap();
+                if (leafletMap) {
+                    leafletMap.options.preferCanvas = true;
+                    leafletMap.options.updateWhenZooming = false;
+                    leafletMap.options.updateWhenIdle = true;
+
+                    leafletMap.on('zoomend', function() {
+                        const zoom = leafletMap.getZoom();
+                        const minZoom = 10;
+                        
+                        customMarkers.forEach(markerRef => {
+                            if (markerRef.marker) {
+                                if (zoom < minZoom) {
+                                    markerRef.marker.setOpacity(0.6);
+                                } else {
+                                    markerRef.marker.setOpacity(1);
+                                }
+                            }
+                        });
+                    });
+
+                    leafletMap.on('moveend', function() {
+                        updateAdvancedControls();
+                    });
+                }
+            } catch (error) {
+                console.warn('Could not optimize map performance:', error);
+            }
+        }
+
+        setTimeout(optimizeMapPerformance, 2000);
+
+        function handleResponsiveChanges() {
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                const modal = document.getElementById('customer-modal');
+                if (modal) {
+                    const modalContent = modal.querySelector('div');
+                    modalContent.style.width = '95%';
+                    modalContent.style.maxHeight = '95vh';
+                }
+
+                const notifications = document.querySelectorAll('.notification');
+                notifications.forEach(notification => {
+                    notification.style.right = '10px';
+                    notification.style.left = '10px';
+                    notification.style.maxWidth = 'none';
+                });
+            }
+        }
+
+        window.addEventListener('resize', handleResponsiveChanges);
+        document.addEventListener('DOMContentLoaded', handleResponsiveChanges);
+
+        function optimizeForTouch() {
+            if ('ontouchstart' in window) {
+                const style = document.createElement('style');
+                style.textContent = `
+                    .btn { min-height: 44px; }
+                    .dropdown-item { min-height: 44px; }
+                    .leaflet-container { touch-action: pan-x pan-y; }
+                    .custom-dropdown { touch-action: manipulation; }
+                `;
+                document.head.appendChild(style);
+
+                document.addEventListener('touchstart', function(e) {
+                    if (e.target.classList.contains('btn') || e.target.classList.contains('dropdown-item')) {
+                        e.target.style.transform = 'scale(0.95)';
+                    }
+                });
+                
+                document.addEventListener('touchend', function(e) {
+                    if (e.target.classList.contains('btn') || e.target.classList.contains('dropdown-item')) {
+                        setTimeout(() => {
+                            e.target.style.transform = '';
+                        }, 100);
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', optimizeForTouch);
+
+        function enhanceAccessibility() {
+            document.querySelectorAll('.btn').forEach(btn => {
+                if (!btn.getAttribute('aria-label')) {
+                    const text = btn.textContent.trim();
+                    btn.setAttribute('aria-label', text);
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    const focusableElements = document.querySelectorAll(
+                        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                    );
+                    const firstElement = focusableElements[0];
+                    const lastElement = focusableElements[focusableElements.length - 1];
+                    
+                    if (e.shiftKey && document.activeElement === firstElement) {
+                        e.preventDefault();
+                        lastElement.focus();
+                    } else if (!e.shiftKey && document.activeElement === lastElement) {
+                        e.preventDefault();
+                        firstElement.focus();
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', enhanceAccessibility);
+
+        function monitorPerformance() {
+            if (window.performance && window.performance.mark) {
+                window.performance.mark('map-interaction-start');
+                
+                setTimeout(() => {
+                    window.performance.mark('map-interaction-end');
+                    window.performance.measure('map-interaction', 'map-interaction-start', 'map-interaction-end');
+                    
+                    const measures = window.performance.getEntriesByType('measure');
+                    const mapMeasure = measures.find(m => m.name === 'map-interaction');
+                    if (mapMeasure && mapMeasure.duration > 5000) {
+                        console.warn('Map interaction performance is slow:', mapMeasure.duration + 'ms');
+                    }
+                }, 3000);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', monitorPerformance);
+
+        window.addEventListener('beforeunload', function() {
+            clearTimeout(autoSaveTimeout);
+
+            try {
+                const currentState = {
+                    editingMode: editingMode,
+                    customMarkersCount: customMarkers.length,
+                    lastActivity: new Date().toISOString()
+                };
+                sessionStorage.setItem('mapState', JSON.stringify(currentState));
+            } catch (error) {
+                console.warn('Could not save state:', error);
+            }
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const savedState = sessionStorage.getItem('mapState');
+                if (savedState) {
+                    const state = JSON.parse(savedState);
+                    console.log('Restored previous session state:', state);
+                }
+            } catch (error) {
+                console.warn('Could not restore state:', error);
+            }
+        });
+        console.log('Vehicle Tracking Dashboard - Interactive Map Editing System Loaded');
+        console.log('Features: Customer point editing, real-time updates, responsive design, accessibility');
+        console.log('Keyboard shortcuts: Ctrl+E (toggle edit mode), ESC (close modals)');
+        function showManualAddModal() {
+            const modal = createModal('Manually Add Customer Point', `
+                <div class="form-group">
+                    <label for="manual-customer-id">Customer ID *</label>
+                    <input type="text" id="manual-customer-id" placeholder="Enter customer ID" required>
+                </div>
+                <div class="form-group">
+                    <label for="manual-latitude">Latitude *</label>
+                    <input type="number" id="manual-latitude" step="0.000001" placeholder="e.g. 25.276987" required>
+                </div>
+                <div class="form-group">
+                    <label for="manual-longitude">Longitude *</label>
+                    <input type="number" id="manual-longitude" step="0.000001" placeholder="e.g. 55.296249" required>
+                </div>
+                <div class="form-group">
+                    <label for="manual-customer-name">Customer Name</label>
+                    <input type="text" id="manual-customer-name" placeholder="Enter customer name">
+                </div>
+                <div class="form-group">
+                    <label for="manual-customer-contact">Contact Information</label>
+                    <input type="text" id="manual-customer-contact" placeholder="Phone, email, etc.">
+                </div>
+                <div class="form-group">
+                    <label for="manual-customer-description">Description/Address</label>
+                    <textarea id="manual-customer-description" rows="3" placeholder="Additional details or address"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="manual-customer-vehicle">Vehicle *</label>
+                    <select id="manual-customer-vehicle" required>
+                        <option value="">Select Vehicle</option>
+                        ${getVehicleOptions()}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="manual-customer-weekday">Weekday *</label>
+                    <select id="manual-customer-weekday" required>
+                        <option value="">Select Weekday</option>
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                        <option value="Sunday">Sunday</option>
+                    </select>
+                </div>
+            `, function() {
+                const customerId = document.getElementById('manual-customer-id').value.trim();
+                const latitude = parseFloat(document.getElementById('manual-latitude').value);
+                const longitude = parseFloat(document.getElementById('manual-longitude').value);
+                const vehicleId = document.getElementById('manual-customer-vehicle').value;
+                const weekday = document.getElementById('manual-customer-weekday').value;
+
+                if (!customerId) {
+                    showNotification('Customer ID is required', 'error');
+                    return;
+                }
+                if (isNaN(latitude) || isNaN(longitude)) {
+                    showNotification('Valid latitude and longitude are required', 'error');
+                    return;
+                }
+                if (!vehicleId) {
+                    showNotification('Please select a vehicle', 'error');
+                    return;
+                }
+                if (!weekday) {
+                    showNotification('Please select a weekday', 'error');
+                    return;
+                }
+                if (latitude < -90 || latitude > 90) {
+                    showNotification('Latitude must be between -90 and 90', 'error');
+                    return;
+                }
+                if (longitude < -180 || longitude > 180) {
+                    showNotification('Longitude must be between -180 and 180', 'error');
+                    return;
+                }
+                const data = {
+                    customer_id: customerId,
+                    customer_name: document.getElementById('manual-customer-name').value,
+                    customer_contact: document.getElementById('manual-customer-contact').value,
+                    description: document.getElementById('manual-customer-description').value,
+                    vehicle_id: vehicleId,
+                    weekday: weekday,
+                    latitude: latitude,
+                    longitude: longitude
+                };
+                addCustomerPointToMap(data);
+                addCustomerPointToBackend(data);
+                modal.remove();
+            });
+        }
+        function showDeleteByIdModal() {
+            const modal = createModal('Delete Customer Point', `
+                <div class="form-group">
+                    <label for="delete-customer-id">Customer ID *</label>
+                    <input type="text" id="delete-customer-id" placeholder="Enter customer ID to delete" required>
+                </div>
+                <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; border-radius: 5px; margin: 10px 0;">
+                    <i class="fas fa-exclamation-triangle" style="color: #856404;"></i>
+                    <strong>Warning:</strong> This will permanently delete the customer point.
+                </div>
+            `, function() {
+                const customerId = document.getElementById('delete-customer-id').value.trim();
+                if (!customerId) {
+                    showNotification('Customer ID is required', 'error');
+                    return;
+                }
+                if (confirm(`Are you sure you want to delete customer point with ID: ${customerId}?`)) {
+                    deleteCustomerPointById(customerId);
+                    modal.remove();
+                }
+            });
+        }
+        function deleteCustomerPointById(customerId) {
+            fetch('/api/remove-customer-point', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ customer_id: customerId })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    showNotification(`Customer point ${customerId} deleted successfully`, 'success');
+                    removeCustomerPointFromMap(customerId);
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showNotification(`Failed to delete customer point: ${result.error}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting customer point:', error);
+                showNotification('Error deleting customer point', 'error');
+            });
+        }
+        function addManualControlButtons() {
+            const buttonContainer = document.querySelector('.button-group') || document.querySelector('form') || document.body;
+            if (buttonContainer && !document.getElementById('manual-controls')) {
+                const controlsDiv = document.createElement('div');
+                controlsDiv.id = 'manual-controls';
+                controlsDiv.style.cssText = `
+                    margin: 10px 0;
+                    padding: 10px;
+                    border: 1px solid #ddd;
+                    border-radius: 5px;
+                    background: #f9f9f9;
+                `;
+                controlsDiv.innerHTML = `
+                    <h4 style="margin: 0 0 10px 0; color: #2c5aa0;">
+                        <i class="fas fa-tools"></i> Manual Controls
+                    </h4>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" id="manual-add-btn" class="btn btn-success" style="background: #28a745;">
+                            <i class="fas fa-plus"></i> Add Point Manually
+                        </button>
+                        <button type="button" id="delete-by-id-btn" class="btn btn-danger" style="background: #dc3545;">
+                            <i class="fas fa-trash"></i> Delete by Customer ID
+                        </button>
+                    </div>
+                `;
+                
+                buttonContainer.appendChild(controlsDiv);
+                document.getElementById('manual-add-btn').addEventListener('click', showManualAddModal);
+                document.getElementById('delete-by-id-btn').addEventListener('click', showDeleteByIdModal);
+                console.log('Manual control buttons added');
+            }
+        }
+        function initializeManualControls() {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', addManualControlButtons);
+            } else {
+                addManualControlButtons();
+            }
+            setTimeout(addManualControlButtons, 1000);
+        }
+        initializeManualControls();
+    </script>
+</body>
+</html>

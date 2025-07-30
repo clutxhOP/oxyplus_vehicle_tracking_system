@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.pyo
+*.whl
+*.tar.gz
+numpy/
+testenv/

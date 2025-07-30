@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Route Comparison - OxyPlus Vehicle Tracking Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 50%, #4CAF50 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-bottles {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .water-bottle {
+            width: 20px;
+            height: 35px;
+            background: linear-gradient(180deg, #2196F3 0%, #21CBF3 100%);
+            border-radius: 3px 3px 8px 8px;
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .water-bottle::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+        }
+
+        .water-bottle:nth-child(1) { animation-delay: 0s; }
+        .water-bottle:nth-child(2) { animation-delay: 0.5s; }
+        .water-bottle:nth-child(3) { animation-delay: 1s; }
+
+        .leaf-icon {
+            color: #4CAF50;
+            font-size: 1.8rem;
+            margin-left: 0.5rem;
+            animation: sway 2s ease-in-out infinite;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #2196F3;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .oxy-plus-text {
+            color: #21CBF3;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .header-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+        }
+
+        .header-btn:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .control-panel {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #2196F3;
+        }
+
+        .form-group input, .form-group select {
+            padding: 0.75rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        .time-controls {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(33, 150, 243, 0.05);
+            border-radius: 15px;
+            border: 2px solid rgba(33, 150, 243, 0.1);
+        }
+
+        .time-controls h3 {
+            margin: 0 0 15px 0;
+            color: #2196F3;
+            font-size: 1.2em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .time-section {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            border: 1px solid rgba(33, 150, 243, 0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .time-section h4 {
+            margin: 0 0 12px 0;
+            color: #21CBF3;
+            font-size: 1em;
+            font-weight: 600;
+        }
+
+        .time-row {
+            display: flex;
+            gap: 20px;
+            align-items: end;
+        }
+
+        .time-group {
+            flex: 1;
+        }
+
+        .time-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2196F3;
+            font-size: 0.9em;
+        }
+
+        .time-group input[type="time"] {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .time-group input[type="time"]:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        .time-presets {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid rgba(33, 150, 243, 0.1);
+        }
+
+        .time-presets label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2196F3;
+            font-size: 0.95em;
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            padding: 8px 16px;
+            border: 2px solid #2196F3;
+            background: white;
+            color: #2196F3;
+            border-radius: 20px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .preset-btn:hover {
+            background: #2196F3;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        }
+
+        .preset-btn:active {
+            transform: translateY(0px);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(244, 67, 54, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.4);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1.2rem 1.5rem;
+            border-radius: 15px;
+            color: white;
+            z-index: 1000;
+            max-width: 350px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            backdrop-filter: blur(10px);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #4CAF50, #66BB6A);
+        }
+
+        .notification.warning {
+            background: linear-gradient(135deg, #FF9800, #FFB74D);
+            color: #212529;
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #f44336, #EF5350);
+        }
+
+        .legend {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .legend h3 {
+            color: #2196F3;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(33, 150, 243, 0.05);
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .legend-line {
+            width: 35px;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .legend-line.solid {
+            background: currentColor;
+        }
+
+        .legend-line.dotted {
+            background: repeating-linear-gradient(
+                to right,
+                currentColor 0px,
+                currentColor 5px,
+                transparent 5px,
+                transparent 10px
+            );
+        }
+
+        .vehicle-selection {
+            background: rgba(33, 150, 243, 0.05);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            border: 2px solid rgba(33, 150, 243, 0.1);
+        }
+
+        .vehicle-selection h3 {
+            color: #2196F3;
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .vehicle-checkboxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .vehicle-checkbox {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            border: 2px solid rgba(33, 150, 243, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .vehicle-checkbox:hover {
+            border-color: #2196F3;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(33, 150, 243, 0.2);
+        }
+
+        .vehicle-checkbox.selected {
+            border-color: #2196F3;
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+            color: white;
+            box-shadow: 0 8px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        .vehicle-checkbox input {
+            margin-right: 1rem;
+            transform: scale(1.3);
+            accent-color: #2196F3;
+        }
+
+        .results-section {
+            margin-top: 2rem;
+        }
+
+        .map-container {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .map-container iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border-left: 5px solid #2196F3;
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .metric-card h4 {
+            margin-bottom: 1.5rem;
+            color: #2196F3;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.75rem 0;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(33, 150, 243, 0.1);
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: #2196F3;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem;
+            color: #2196F3;
+        }
+
+        .loading i {
+            font-size: 4rem;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+            color: #21CBF3;
+        }
+
+        .loading p {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .error {
+            background: linear-gradient(135deg, #f44336, #EF5350);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 1rem 0;
+            box-shadow: 0 8px 25px rgba(244, 67, 54, 0.3);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes sway {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .header-actions {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .logo-section {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .vehicle-checkboxes {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .time-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .preset-buttons {
+                flex-direction: column;
+            }
+            
+            .preset-btn {
+                width: 100%;
+            }
+
+            .legend-items {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-route"></i> Daily Route Comparison</h1>
+        <div class="nav-links">
+            <a href="/"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="/weekly-customers"><i class="fas fa-users"></i> Assign Routes</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="control-panel">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="currentDate"><i class="fas fa-calendar-day"></i> Current Date</label>
+                    <input type="date" id="currentDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="pastDate"><i class="fas fa-calendar-alt"></i> Past Date (Optional)</label>
+                    <input type="date" id="pastDate">
+                </div>
+            </div>
+    
+            <!-- Time Range Controls -->
+            <div class="time-controls">
+                <h3><i class="fas fa-clock"></i> Time Range Settings</h3>
+                
+                <div class="time-section">
+                    <h4>Current Date Time Range</h4>
+                    <div class="time-row">
+                        <div class="time-group">
+                            <label for="currentStartTime">Start Time</label>
+                            <input type="time" id="currentStartTime" value="00:00" step="1">
+                        </div>
+                        <div class="time-group">
+                            <label for="currentEndTime">End Time</label>
+                            <input type="time" id="currentEndTime" value="23:59" step="1">
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="time-section" id="pastTimeSection" style="display: none;">
+                    <h4>Past Date Time Range</h4>
+                    <div class="time-row">
+                        <div class="time-group">
+                            <label for="pastStartTime">Start Time</label>
+                            <input type="time" id="pastStartTime" value="00:00" step="1">
+                        </div>
+                        <div class="time-group">
+                            <label for="pastEndTime">End Time</label>
+                            <input type="time" id="pastEndTime" value="23:59" step="1">
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Quick Time Presets -->
+                <div class="time-presets">
+                    <label>Quick Presets:</label>
+                    <div class="preset-buttons">
+                        <button type="button" class="preset-btn" onclick="setTimePreset('full')">Full Day</button>
+                        <button type="button" class="preset-btn" onclick="setTimePreset('morning')">Morning (6-12)</button>
+                        <button type="button" class="preset-btn" onclick="setTimePreset('afternoon')">Afternoon (12-18)</button>
+                        <button type="button" class="preset-btn" onclick="setTimePreset('evening')">Evening (18-23)</button>
+                        <button type="button" class="preset-btn" onclick="setTimePreset('working')">Working Hours (8-17)</button>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="vehicle-selection">
+                <h3><i class="fas fa-truck"></i> Select Vehicles to Compare</h3>
+                <div class="vehicle-checkboxes" id="vehicleCheckboxes">
+                    <!-- Vehicle checkboxes will be populated dynamically -->
+                </div>
+            </div>
+            
+
+    
+            <div style="text-align: center;">
+                <button class="btn btn-primary" id="compareBtn" onclick="compareRoutes()">
+                    <i class="fas fa-chart-line"></i> Compare Routes
+                </button>
+            </div>
+        </div>
+    
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <div class="legend">
+                <h3><i class="fas fa-info-circle"></i> Map Legend</h3>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="legend-line solid" style="color: #4ECDC4;"></div>
+                        <span>Actual Route (Solid Line)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line dotted" style="color: #4ECDC4;"></div>
+                        <span>Planned Route (Dotted Line)</span>
+                    </div>
+                    <div class="legend-item">
+                        <i class="fas fa-circle" style="color: green;"></i>
+                        <span>Start Point</span>
+                    </div>
+                    <div class="legend-item">
+                        <i class="fas fa-stop" style="color: red;"></i>
+                        <span>End Point</span>
+                    </div>
+                    <div class="legend-item">
+                        <i class="fas fa-circle" style="color: #FF6B6B;"></i>
+                        <span>Customer Points</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="map-container" id="mapContainer">
+            <!-- Map will be inserted here -->
+        </div>
+
+        <div class="metrics-grid" id="metricsGrid">
+            <!-- Metrics cards will be populated dynamically -->
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let availableVehicles = [];
+        let selectedVehicles = new Set();
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAvailableVehicles();
+            setDefaultDates();
+            setupEventListeners();
+        });
+
+        function setDefaultDates() {
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            document.getElementById('currentDate').value = today.toISOString().split('T')[0];
+            document.getElementById('pastDate').value = yesterday.toISOString().split('T')[0];
+        }
+
+        function setupEventListeners() {
+            // Show/hide past time section based on past date selection
+            document.getElementById('pastDate').addEventListener('change', function() {
+                const pastTimeSection = document.getElementById('pastTimeSection');
+                if (this.value) {
+                    pastTimeSection.style.display = 'block';
+                } else {
+                    pastTimeSection.style.display = 'none';
+                }
+            });
+            
+
+        }
+
+        async function loadAvailableVehicles() {
+            try {
+                const response = await fetch('/api/available-vehicles');
+                const data = await response.json();
+                
+                if (data.success) {
+                    availableVehicles = data.vehicles;
+                    populateVehicleCheckboxes();
+                } else {
+                    showError('Failed to load available vehicles: ' + data.error);
+                }
+            } catch (error) {
+                showError('Error loading vehicles: ' + error.message);
+            }
+        }
+
+        function populateVehicleCheckboxes() {
+            const container = document.getElementById('vehicleCheckboxes');
+            container.innerHTML = '';
+
+            availableVehicles.forEach(vehicle => {
+                const checkboxDiv = document.createElement('div');
+                checkboxDiv.className = 'vehicle-checkbox';
+                checkboxDiv.onclick = () => toggleVehicle(vehicle.id, checkboxDiv);
+
+                checkboxDiv.innerHTML = `
+                    <input type="checkbox" id="vehicle_${vehicle.id}">
+                    <label for="vehicle_${vehicle.id}">
+                        <strong>${vehicle.alias}</strong><br>
+                        <small>ID: ${vehicle.id}</small>
+                    </label>
+                `;
+
+                container.appendChild(checkboxDiv);
+            });
+        }
+
+        function toggleVehicle(vehicleId, element) {
+            const checkbox = element.querySelector('input');
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                selectedVehicles.add(vehicleId);
+                element.classList.add('selected');
+            } else {
+                selectedVehicles.delete(vehicleId);
+                element.classList.remove('selected');
+            }
+        }
+
+        function setTimePreset(preset) {
+            const currentStart = document.getElementById('currentStartTime');
+            const currentEnd = document.getElementById('currentEndTime');
+            const pastStart = document.getElementById('pastStartTime');
+            const pastEnd = document.getElementById('pastEndTime');
+
+            let startTime, endTime;
+
+            switch (preset) {
+                case 'full':
+                    startTime = '00:00';
+                    endTime = '23:59';
+                    break;
+                case 'morning':
+                    startTime = '06:00';
+                    endTime = '12:00';
+                    break;
+                case 'afternoon':
+                    startTime = '12:00';
+                    endTime = '18:00';
+                    break;
+                case 'evening':
+                    startTime = '18:00';
+                    endTime = '23:00';
+                    break;
+                case 'working':
+                    startTime = '08:00';
+                    endTime = '17:00';
+                    break;
+                default:
+                    startTime = '00:00';
+                    endTime = '23:59';
+            }
+
+            // Ensure all time strings are in "HH:MM:SS" format
+            const formatToFullTime = t => (t.length === 5 ? `${t}:00` : t.slice(0, 8));
+
+            currentStart.value = formatToFullTime(startTime);
+            currentEnd.value = formatToFullTime(endTime);
+
+            if (document.getElementById('pastTimeSection').style.display !== 'none') {
+                pastStart.value = formatToFullTime(startTime);
+                pastEnd.value = formatToFullTime(endTime);
+            }
+        }
+
+        async function compareRoutes() {
+            function formatToHHMMSS(t) {
+                return t.length === 5 ? `${t}:00` : t.slice(0, 8);
+            }
+            const currentDate = document.getElementById('currentDate').value;
+            const pastDate = document.getElementById('pastDate').value;
+            const currentStartTime = formatToHHMMSS(document.getElementById('currentStartTime').value);
+            const currentEndTime = formatToHHMMSS(document.getElementById('currentEndTime').value);
+            const pastStartTime = formatToHHMMSS(document.getElementById('pastStartTime').value);
+            const pastEndTime = formatToHHMMSS(document.getElementById('pastEndTime').value);
+
+            if (!currentDate) {
+                showError('Please select a current date');
+                return;
+            }
+
+            if (selectedVehicles.size === 0) {
+                showError('Please select at least one vehicle');
+                return;
+            }
+
+            const compareBtn = document.getElementById('compareBtn');
+            const resultsSection = document.getElementById('resultsSection');
+            
+            // Show loading state
+            compareBtn.disabled = true;
+            compareBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            resultsSection.style.display = 'block';
+            resultsSection.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Analyzing routes...</p></div>';
+
+            try {
+                // Construct datetime strings with proper formatting
+                const t_start_current = `${currentDate} ${currentStartTime}`;
+                const t_end_current = `${currentDate} ${currentEndTime}`;
+                let t_start_past = null;
+                let t_end_past = null;
+                
+                if (pastDate) {
+                    t_start_past = `${pastDate} ${pastStartTime}`;
+                    t_end_past = `${pastDate} ${pastEndTime}`;
+                }
+
+                const requestData = {
+                    vehicle_ids: Array.from(selectedVehicles),
+                    date_current: currentDate,
+                    date_past: pastDate || null,
+                    t_start_current: t_start_current,
+                    t_end_current: t_end_current,
+                    t_start_past: t_start_past,
+                    t_end_past: t_end_past
+                };
+
+                const response = await fetch('/api/compare-routes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayResults(data.map_html, data.comparison_data, data.time_ranges);
+                } else {
+                    showError('Comparison failed: ' + data.error);
+                }
+            } catch (error) {
+                showError('Error during comparison: ' + error.message);
+            } finally {
+                // Reset button
+                compareBtn.disabled = false;
+                compareBtn.innerHTML = '<i class="fas fa-chart-line"></i> Compare Routes';
+            }
+        }
+
+        function displayResults(mapHtml, comparisonData, timeRanges) {
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.style.display = 'block';
+            resultsSection.innerHTML = `
+                <div class="legend">
+                    <h3><i class="fas fa-info-circle"></i> Map Legend</h3>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <div class="legend-line solid" style="color: #4ECDC4;"></div>
+                            <span>Actual Route (Solid Line)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-line dotted" style="color: #4ECDC4;"></div>
+                            <span>Planned Route (Dotted Line)</span>
+                        </div>
+                        <div class="legend-item">
+                            <i class="fas fa-circle" style="color: green;"></i>
+                            <span>Start Point</span>
+                        </div>
+                        <div class="legend-item">
+                            <i class="fas fa-stop" style="color: red;"></i>
+                            <span>End Point</span>
+                        </div>
+                    </div>
+                    ${timeRanges ? `
+                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e1e8ed;">
+                            <h4>Analysis Time Ranges:</h4>
+                            <p><strong>Current:</strong> ${timeRanges.current.start} to ${timeRanges.current.end}</p>
+                            ${timeRanges.past ? `<p><strong>Past:</strong> ${timeRanges.past.start} to ${timeRanges.past.end}</p>` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            // Insert map
+            if (mapHtml) {
+                document.getElementById('mapContainer').style.display = 'block';
+                document.getElementById('mapContainer').innerHTML = mapHtml;
+            } else {
+                document.getElementById('mapContainer').style.display = 'none';
+                showError('No map data available');
+            }
+
+            // Generate metrics cards
+            generateMetricsCards(comparisonData);
+        }
+
+        function generateMetricsCards(comparisonData) {
+            const metricsGrid = document.getElementById('metricsGrid');
+            metricsGrid.innerHTML = '';
+
+            // Group data by vehicle and label
+            const groupedData = {};
+            
+            Object.keys(comparisonData).forEach(key => {
+                const data = comparisonData[key];
+                if (data.error) {
+                    // Handle error cases
+                    const errorCard = document.createElement('div');
+                    errorCard.className = 'metric-card';
+                    errorCard.style.borderLeftColor = '#ff6b6b';
+                    errorCard.innerHTML = `
+                        <h4><i class="fas fa-exclamation-triangle"></i> ${data.alias} - ${data.label}</h4>
+                        <div class="error">${data.error}</div>
+                    `;
+                    metricsGrid.appendChild(errorCard);
+                    return;
+                }
+
+                const groupKey = `${data.vehicle_id}_${data.alias}`;
+                if (!groupedData[groupKey]) {
+                    groupedData[groupKey] = {
+                        vehicle_id: data.vehicle_id,
+                        alias: data.alias,
+                        color: data.color,
+                        data: {}
+                    };
+                }
+                groupedData[groupKey].data[data.label] = data;
+            });
+
+            // Create cards for each vehicle
+            Object.keys(groupedData).forEach(groupKey => {
+                const group = groupedData[groupKey];
+                const card = document.createElement('div');
+                card.className = 'metric-card';
+                card.style.borderLeftColor = group.color;
+
+                let cardContent = `
+                    <h4>
+                        <i class="fas fa-truck"></i> 
+                        ${group.alias} 
+                        <span style="color: ${group.color};">●</span>
+                    </h4>
+                `;
+
+                Object.keys(group.data).forEach(period => {
+                    const data = group.data[period];
+                    
+                    // Calculate visit status color
+                    const visitPercentage = data.visit_percentage || 0;
+                    let visitColor = '#dc3545'; // Red for low percentage
+                    if (visitPercentage >= 80) visitColor = '#28a745'; // Green for high percentage
+                    else if (visitPercentage >= 60) visitColor = '#ffc107'; // Yellow for medium percentage
+                    
+                    cardContent += `
+                        <div style="margin-bottom: 1rem;">
+                            <h5 style="color: #667eea; margin-bottom: 0.5rem;">${period} Route</h5>
+                            
+                            <!-- Route Metrics -->
+                            <div class="metric-section">
+                                <h6 style="color: #495057; margin-bottom: 0.3rem; font-size: 0.9rem;">Route Analysis</h6>
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-ruler-horizontal"></i> Maximum Route Deviation</span>
+                                    <span class="metric-value">${data.maximum_route_deviation || 0} m</span>
+                                </div>
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-route"></i> Planned Route Coverage</span>
+                                    <span class="metric-value">${data.planned_route_coverage || 0}%</span>
+                                </div>
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-map-signs"></i> Actual Route Alignment</span>
+                                    <span class="metric-value">${data.actual_route_alignment || 0}%</span>
+                                </div>
+
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-road"></i> Actual Distance</span>
+                                    <span class="metric-value">${data.actual_distance || 0} km</span>
+                                </div>
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-map-marked-alt"></i> Planned Distance</span>
+                                    <span class="metric-value">${data.planned_distance || 0} km</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Customer Points Metrics -->
+                            <div class="metric-section" style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid #dee2e6;">
+                                <h6 style="color: #495057; margin-bottom: 0.3rem; font-size: 0.9rem;">Customer Points Analysis</h6>
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-map-pin"></i> Total Customer Points</span>
+                                    <span class="metric-value">${data.total_customer_points || 0}</span>
+                                </div>
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-check-circle" style="color: #28a745;"></i> Visited Points</span>
+                                    <span class="metric-value">${data.visited_customer_points || 0}</span>
+                                </div>
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-times-circle" style="color: #dc3545;"></i> Unvisited Points</span>
+                                    <span class="metric-value">${data.unvisited_customer_points || 0}</span>
+                                </div>
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-chart-pie"></i> Visit Success Rate</span>
+                                    <span class="metric-value" style="color: ${visitColor}; font-weight: bold;">${data.visit_percentage || 0}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                card.innerHTML = cardContent;
+                metricsGrid.appendChild(card);
+            });
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : type === 'warning' ? 'exclamation-triangle' : 'times'}"></i> ${message}`;
+            
+            document.body.appendChild(notification);
+            
+            // Show notification
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            // Remove notification after 3 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+            
+            // Insert error at the top of the container
+            const container = document.querySelector('.container');
+            const firstChild = container.firstElementChild;
+            container.insertBefore(errorDiv, firstChild);
+            
+            // Auto-remove error after 5 seconds
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.parentNode.removeChild(errorDiv);
+                }
+            }, 5000);
+        }
+
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('edit-custom-point-btn')) {
+                const customerId = e.target.getAttribute('data-customer-id');
+                const data = {
+                    customer_id: customerId,
+                    lat: e.target.getAttribute('data-lat'),
+                    lon: e.target.getAttribute('data-lon'),
+                    vehicle: e.target.getAttribute('data-vehicle'),
+                    weekday: e.target.getAttribute('data-weekday'),
+                    name: e.target.getAttribute('data-name'),
+                    contact: e.target.getAttribute('data-contact'),
+                    description: e.target.getAttribute('data-description')
+                };
+                showEditCustomerPointModal(data);
+            }
+            
+            if (e.target.classList.contains('remove-custom-point-btn')) {
+                const customerId = e.target.getAttribute('data-customer-id');
+                if (confirm('Remove this customer point?')) {
+                    removeCustomerPoint(customerId);
+                }
+            }
+            
+            if (e.target.classList.contains('edit-point-btn')) {
+                const data = {
+                    lat: e.target.getAttribute('data-lat'),
+                    lon: e.target.getAttribute('data-lon'),
+                    vehicle: e.target.getAttribute('data-vehicle'),
+                    weekday: e.target.getAttribute('data-weekday')
+                };
+                showEditOriginalPointModal(data);
+            }
+            
+            if (e.target.classList.contains('remove-point-btn')) {
+                const data = {
+                    lat: e.target.getAttribute('data-lat'),
+                    lon: e.target.getAttribute('data-lon'),
+                    vehicle: e.target.getAttribute('data-vehicle'),
+                    weekday: e.target.getAttribute('data-weekday')
+                };
+                if (confirm('Remove this original point?')) {
+                    removeOriginalPoint(data);
+                }
+            }
+        });
+
+        function removeOriginalPoint(data) {
+            const queryString = new URLSearchParams(data).toString();
+            
+            fetch(`/api/remove-original-point?${queryString}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    showNotification('Original point removed successfully', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showNotification('Failed to remove original point: ' + result.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error removing original point:', error);
+                showNotification('Error removing original point', 'error');
+            });
+        }
+
+        function showEditOriginalPointModal(data) {
+            const modal = createModal('Edit Original Point', `
+                <div style="margin-bottom: 1rem;">
+                    <label>Customer Name:</label>
+                    <input type="text" id="customerName" placeholder="Enter customer name" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label>Customer Contact:</label>
+                    <input type="text" id="customerContact" placeholder="Enter customer contact" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label>Description:</label>
+                    <textarea id="description" placeholder="Enter description" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; height: 80px;"></textarea>
+                </div>
+            `);
+
+            const submitBtn = modal.querySelector('.modal-submit');
+            submitBtn.onclick = () => {
+                const customerName = document.getElementById('customerName').value;
+                const customerContact = document.getElementById('customerContact').value;
+                const description = document.getElementById('description').value;
+
+                if (!customerName.trim()) {
+                    showNotification('Customer name is required', 'error');
+                    return;
+                }
+
+                fetch('/api/edit-original-point', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ...data,
+                        customer_name: customerName,
+                        customer_contact: customerContact,
+                        description: description
+                    })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        showNotification('Original point updated successfully', 'success');
+                        closeModal();
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showNotification('Failed to update original point: ' + result.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating original point:', error);
+                    showNotification('Error updating original point', 'error');
+                });
+            };
+        }
+
+        function showEditCustomerPointModal(data) {
+            const modal = createModal('Edit Customer Point', `
+                <div style="margin-bottom: 1rem;">
+                    <label>Customer Name:</label>
+                    <input type="text" id="customerName" value="${data.name || ''}" placeholder="Enter customer name" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label>Customer Contact:</label>
+                    <input type="text" id="customerContact" value="${data.contact || ''}" placeholder="Enter customer contact" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label>Description:</label>
+                    <textarea id="description" placeholder="Enter description" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; height: 80px;">${data.description || ''}</textarea>
+                </div>
+            `);
+
+            const submitBtn = modal.querySelector('.modal-submit');
+            submitBtn.onclick = () => {
+                const customerName = document.getElementById('customerName').value;
+                const customerContact = document.getElementById('customerContact').value;
+                const description = document.getElementById('description').value;
+
+                if (!customerName.trim()) {
+                    showNotification('Customer name is required', 'error');
+                    return;
+                }
+
+                fetch('/api/edit-customer-point', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        customer_id: data.customer_id,
+                        customer_name: customerName,
+                        customer_contact: customerContact,
+                        description: description
+                    })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        showNotification('Customer point updated successfully', 'success');
+                        closeModal();
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showNotification('Failed to update customer point: ' + result.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating customer point:', error);
+                    showNotification('Error updating customer point', 'error');
+                });
+            };
+        }
+
+        function removeCustomerPoint(customerId) {
+            fetch('/api/remove-customer-point', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    customer_id: customerId
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    showNotification('Customer point removed successfully', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    console.error('Failed to remove customer point:', result.error);
+                    showNotification('Failed to remove customer point: ' + result.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error removing customer point:', error);
+                showNotification('Error removing customer point', 'error');
+            });
+        }
+
+        function createModal(title, content) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+            `;
+
+            modal.innerHTML = `
+                <div style="
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 8px;
+                    max-width: 500px;
+                    width: 90%;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                ">
+                    <h3 style="margin-bottom: 1rem;">${title}</h3>
+                    ${content}
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="modal-submit" style="
+                            background: #007bff;
+                            color: white;
+                            border: none;
+                            padding: 0.5rem 1rem;
+                            border-radius: 4px;
+                            cursor: pointer;
+                        ">Save</button>
+                        <button onclick="closeModal()" style="
+                            background: #6c757d;
+                            color: white;
+                            border: none;
+                            padding: 0.5rem 1rem;
+                            border-radius: 4px;
+                            cursor: pointer;
+                        ">Cancel</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            return modal;
+        }
+
+        function closeModal() {
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+    </script>
+</body>
+</html>
