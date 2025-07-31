@@ -94,7 +94,7 @@ class TouchTraksLogin:
         self.driver.execute_script("document.body.style.zoom='50%'")
         print("Driver setup complete")
 
-    def wait_for_downloads_complete(self, timeout=60):
+    def wait_for_downloads_complete(self, timeout=360):
         print("Waiting for all downloads to complete...")
         start_time = time.time()
         
@@ -113,7 +113,7 @@ class TouchTraksLogin:
                 print("All downloads completed successfully")
                 return True
                 
-            time.sleep(2)
+            time.sleep(10)
         
         print(f"Download timeout reached ({timeout}s)")
         return False
@@ -1120,7 +1120,7 @@ def extract_all_data():
         requests = ["report","performance","idlereport","exidlereport","geofence"]
         if success:
             for request in requests:
-                seive_time = get_time_range_uae(60*24*30*3)
+                seive_time = get_time_range_uae(60*24*30*2)
                 if not touchtraks.keep_session_alive(css_selectors, request,seive_time[0],seive_time[1]):
                     print(f"Failed to process request, {request} halting further action.")
                     break
