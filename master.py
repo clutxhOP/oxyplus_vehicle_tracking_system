@@ -655,10 +655,10 @@ def check_early_return_alerts():
                         alias = vehicle_aliases.get(vehicle_id, vehicle_id)
                         hb = int(perf['Harsh Break']) if pd.notna(perf['Harsh Break']) else 0
                         ha = int(perf['Harsh Acceleration']) if pd.notna(perf['Harsh Acceleration']) else 0
-                        os = int(perf['Over Speed']) if pd.notna(perf['Over Speed']) else 0
+                        overspeed = int(perf['Over Speed']) if pd.notna(perf['Over Speed']) else 0
                         
                         message = (f"⏰ EARLY RETURN\n{alias} ({driver_name}) returned at {in_time.strftime('%H:%M')}\n"
-                                 f"Customers: {customers_visited}\nViolations: HB:{hb} HA:{ha} OS:{os}")
+                                 f"Customers: {customers_visited}\nViolations: HB:{hb} HA:{ha} OS:{overspeed}")
                         
                         alert_sent = False
                         for contact in phone_numbers['phone_numbers']:
@@ -820,9 +820,9 @@ def generate_daily_report():
                 row = perf_row.iloc[0]
                 hb = int(row['Harsh Break']) if pd.notna(row['Harsh Break']) else 0
                 ha = int(row['Harsh Acceleration']) if pd.notna(row['Harsh Acceleration']) else 0
-                os = int(row['Over Speed']) if pd.notna(row['Over Speed']) else 0
+                overspeed = int(row['Over Speed']) if pd.notna(row['Over Speed']) else 0
                 if hb > 0 or ha > 0 or os > 0:
-                    violations_text = f"HB:{hb} HA:{ha} OS:{os}"
+                    violations_text = f"HB:{hb} HA:{ha} OS:{overspeed}"
             
             report_lines.append(f"\n{alias}:")
             report_lines.append(f"Customers: {customers_visited}/{total_customers} ({visit_percentage:.1f}%)")
