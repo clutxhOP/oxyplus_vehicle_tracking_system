@@ -592,8 +592,8 @@ def load_whatsapp_customer_data(selected_vehicles, selected_weekdays):
             if selected_vehicles:
                 pass
                 
-            if selected_weekdays:
-                merged_df = merged_df[merged_df['weekday'].isin(selected_weekdays)]
+            #if selected_weekdays:
+            #    merged_df = merged_df[merged_df['weekday'].isin(selected_weekdays)]
 
             for _, row in merged_df.iterrows():
                 customer = {
@@ -685,7 +685,57 @@ def api_compare_routes():
         t_end_past,
         generate_map = True
     )
-    
+    whatsapp_customers, whatsapp_stats = load_whatsapp_customer_data(
+        None, 
+        None
+    )
+    for customer in whatsapp_customers:
+        print(f"Assigning customer to map{customer}")
+        whatsapp_icon = folium.DivIcon(
+            html=f'''
+            <div style="
+                background: linear-gradient(45deg, #25D366, #128C7E);
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                border: 3px solid white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            ">
+                <i class="fab fa-whatsapp" style="color: white; font-size: 10px;"></i>
+            </div>
+            ''',
+            icon_size=(26, 26),
+            icon_anchor=(13, 13)
+        )
+
+        popup_html = f'''
+        <div style="font-family: Arial; font-size: 12px; min-width: 250px;">
+            <h4 style="margin: 0 0 10px 0; color: #25D366;">
+                <i class="fab fa-whatsapp"></i> WhatsApp Customer
+            </h4>
+            <b>Name:</b> {customer['customer_name']}<br>
+            <b>Contact:</b> {customer['contact']}<br>
+            <b>Day:</b> {customer['weekday']}<br>
+            <b>Location Received:</b> {customer['location_received_at']}<br>
+            <b>Coordinates:</b> {customer['latitude']:.6f}, {customer['longitude']:.6f}<br>
+            <b>Map Views:</b><br>
+            <a href="https://www.google.com/maps?q={customer['latitude']:.6f},{customer['longitude']:.6f}" target="_blank">🗺️ View Location on 2D Map</a><br>
+            <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint={customer['latitude']:.6f},{customer['longitude']:.6f}" target="_blank">🌐 Explore in Street View (Geolocator)</a><br>
+            <b>Address:</b> {customer['location_description'] or 'WhatsApp Location'}<br>
+            <b>Source:</b> OxyPlus WhatsApp Bot<br>
+        </div>
+        '''
+        
+        folium.Marker(
+            location=[customer['latitude'], customer['longitude']],
+            popup=folium.Popup(popup_html, max_width=350),
+            tooltip=f"{customer['customer_name']} - WhatsApp - {customer['weekday']}",
+            icon=whatsapp_icon
+        ).add_to(map_html)
+    map_html = map_html.get_root.render()
     return jsonify({
         "success": True,
         "map_html": map_html,
