@@ -14,6 +14,7 @@ from collections import defaultdict
 import threading
 
 flask_process = None
+whatsapp_process = None
 monitoring_active = True
 
 IDLE_REPORT_PATH = "data/idlereport/current.csv"
@@ -32,6 +33,51 @@ VIOLATION_THRESHOLD = 12
 ROUTE_DEVIATION_THRESHOLD = 4000
 VISIT_PERCENT_THRESHOLD = 50
 
+def start_whatsapp_job():
+    global whatsapp_process
+    print("DEBUG: Starting WhatsApp script")
+
+    try:
+        whatsapp_process = subprocess.Popen(
+            [sys.executable, "whatsappbot/script.py"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+        print(f"DEBUG: WhatsApp script started with PID {whatsapp_process.pid}")
+    except Exception as e:
+        print(f"ERROR: Failed to start WhatsApp script: {e}")
+        whatsapp_process = None
+
+def stop_whatsapp_job():
+    global whatsapp_process
+    if whatsapp_process and whatsapp_process.poll() is None:
+        try:
+            print("DEBUG: Terminating WhatsApp script...")
+            whatsapp_process.terminate()
+            whatsapp_process.wait(timeout=10)
+            print("DEBUG: WhatsApp script terminated gracefully")
+        except subprocess.TimeoutExpired:
+            print("DEBUG: WhatsApp script did not terminate in time. Killing...")
+            whatsapp_process.kill()
+            print("DEBUG: WhatsApp script killed forcefully")
+        except Exception as e:
+            print(f"ERROR: Error stopping WhatsApp script: {e}")
+    else:
+        print("DEBUG: No running WhatsApp script to stop")
+    whatsapp_process = None
+
+def whatsapp_restart_job():
+    current_time = datetime.now().time()
+    start_time = dtime(8, 0)
+    end_time = dtime(22, 0)
+
+    if not (start_time <= current_time <= end_time):
+        print("DEBUG: Skipping WhatsApp restart due to quiet hours")
+        return
+
+    print("DEBUG: Restarting WhatsApp script job")
+    stop_whatsapp_job()
+    start_whatsapp_job()
 def ensure_alert_directories():
     os.makedirs("alerts", exist_ok=True)
 
@@ -861,26 +907,6 @@ def whatsapp_clean_job():
     except Exception as e:
         print(f"DEBUG: WhatsApp clean job failed silently: {e}")
 
-def whatsapp_script_job():
-    current_time = datetime.now().time()
-    start_time = dtime(8, 0)
-    end_time = dtime(22, 0)
-    
-    if not (start_time <= current_time <= end_time):
-        print("DEBUG: Skipping WhatsApp script job due to quiet hours")
-        return
-    
-    try:
-        result = subprocess.run(
-            [sys.executable, "whatsappbot/script.py"],
-            capture_output=False,
-            text=True,
-            check=False
-        )
-        print(f"DEBUG: WhatsApp script job {'completed' if result.returncode == 0 else 'failed silently'}")
-    except Exception as e:
-        print(f"DEBUG: WhatsApp script job failed silently: {e}")
-
 def alert_monitoring_job():
     current_time = datetime.now().time()
     quiet_start = dtime(21, 0)
@@ -971,7 +997,7 @@ def test_all():
     
     print("\n5. Testing WhatsApp script job...")
     try:
-        whatsapp_script_job()
+        start_whatsapp_job()
         print("WhatsApp script job: PASSED")
     except Exception as e:
         print(f"WhatsApp script job: FAILED - {e}")
@@ -1028,7 +1054,7 @@ def initialize_system():
     print("DEBUG: RAN WHATSAPP CLEAN JOB")
     whatsapp_clean_job()
     print("DEBUG: RAN WHATSAPP SCRIPT JOB")
-    whatsapp_script_job()
+    start_whatsapp_job()
     return True
 
 def schedule_jobs():
@@ -1037,7 +1063,7 @@ def schedule_jobs():
     schedule.every(15).minutes.do(data_extraction_and_formatting_job)
     schedule.every(10).minutes.do(alert_monitoring_job)
     schedule.every(20).minutes.do(whatsapp_clean_job)
-    schedule.every(20).minutes.do(whatsapp_script_job)
+    schedule.every(20).minutes.do(whatsapp_restart_job)
     schedule.every().day.at("01:00").do(preprocessing_job)
     schedule.every().day.at("07:00").do(clear_old_logs)
     schedule.every().day.at("08:00").do(flask_restart_job)

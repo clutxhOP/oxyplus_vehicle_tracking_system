@@ -48,7 +48,78 @@ DEFAULT_SETTINGS = {
     "whatsapp_server_url":"",
     "openai_api_key":""
 }
+def load_whatsapp_customer_data():
+    customers = []
+    stats = {
+        'total_customers': 0,
+        'completed_customers': 0,
+        'pending_customers': 0
+    }
+    
+    try:
+        whatsapp_dir = os.path.join(os.getcwd(), 'whatsappbot')
+        
+        contact_status_file = os.path.join(whatsapp_dir, 'contact_status.csv')
+        extracted_data_file = os.path.join(whatsapp_dir, 'extracted_data.csv')
+        
+        if os.path.exists(contact_status_file) and os.path.exists(extracted_data_file):
 
+            contact_df = pd.read_csv(
+                contact_status_file, 
+                dtype={'contact': str},
+                encoding='utf-8'
+            )
+            extracted_df = pd.read_csv(
+                extracted_data_file, 
+                dtype={'contact': str},
+                encoding='utf-8'
+            )
+            
+            completed_contacts = contact_df[contact_df['status'] == 'COMPLETED']
+            merged_df = pd.merge(
+                completed_contacts, 
+                extracted_df, 
+                on=['contact', 'contact'], 
+                how='inner',
+                suffixes = ('','_drop')
+            )
+
+            merged_df['timestamp'] = pd.to_datetime(merged_df['timestamp'])
+            merged_df['location_received_at'] = pd.to_datetime(merged_df['location_received_at'])
+            merged_df['weekday'] = merged_df['timestamp'].dt.day_name()
+
+            for _, row in merged_df.iterrows():
+                customer = {
+                    'customer_id': f"WA_{row['contact']}",
+                    'customer_name': row['customer_name'],
+                    'contact': row['contact'],
+                    'latitude': float(row['latitude']),
+                    'longitude': float(row['longitude']),
+                    'location_description': row.get('location_description', ''),
+                    'timestamp': row['timestamp'].strftime('%Y-%m-%d %H:%M:%S'),
+                    'location_received_at': row['location_received_at'].strftime('%Y-%m-%d %H:%M:%S'),
+                    'weekday': row['weekday'],
+                    'vehicle_assigned': 'WHATSAPP',
+                    'source': 'WhatsApp'
+                }
+                print(f"Appending customer")
+                customers.append(customer)
+            print(contact_df.head())
+            stats['total_customers'] = len(contact_df)
+            stats['completed_customers'] = len(merged_df)
+            stats['pending_customers'] = len(contact_df[
+                contact_df['status'].isin([
+                    'PENDING', 'AWAITING_NAME', 'AWAITING_LOCATION', 'COLLECTING_LOCATION'
+                ])
+            ])
+            
+            print(f"Loaded {len(customers)} WhatsApp customers")
+        
+    except Exception as e:
+        print(f"Error loading WhatsApp customer data: {e}")
+        import traceback
+        traceback.print_exc()
+    return customers, stats
 def load_vehicle_aliases():
     try:
         if os.path.exists(DRIVER_NAMES):
@@ -1171,10 +1242,57 @@ def generate_route_comparison(
                 icon=folium.Icon(color='red', icon='info-sign')
             ).add_to(m)
         
-        map_html = m._repr_html_()
     else:
         map_html = None
-    
+    if generate_map:
+        whatsapp_customers, whatsapp_stats = load_whatsapp_customer_data()
+        for customer in whatsapp_customers:
+            print(f"Assigning customer to map{customer}")
+            whatsapp_icon = folium.DivIcon(
+                html=f'''
+                <div style="
+                    background: linear-gradient(45deg, #25D366, #128C7E);
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 50%;
+                    border: 3px solid white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                ">
+                    <i class="fab fa-whatsapp" style="color: white; font-size: 10px;"></i>
+                </div>
+                ''',
+                icon_size=(26, 26),
+                icon_anchor=(13, 13)
+            )
+
+            popup_html = f'''
+            <div style="font-family: Arial; font-size: 12px; min-width: 250px;">
+                <h4 style="margin: 0 0 10px 0; color: #25D366;">
+                    <i class="fab fa-whatsapp"></i> WhatsApp Customer
+                </h4>
+                <b>Name:</b> {customer['customer_name']}<br>
+                <b>Contact:</b> {customer['contact']}<br>
+                <b>Day:</b> {customer['weekday']}<br>
+                <b>Location Received:</b> {customer['location_received_at']}<br>
+                <b>Coordinates:</b> {customer['latitude']:.6f}, {customer['longitude']:.6f}<br>
+                <b>Map Views:</b><br>
+                <a href="https://www.google.com/maps?q={customer['latitude']:.6f},{customer['longitude']:.6f}" target="_blank">🗺️ View Location on 2D Map</a><br>
+                <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint={customer['latitude']:.6f},{customer['longitude']:.6f}" target="_blank">🌐 Explore in Street View (Geolocator)</a><br>
+                <b>Address:</b> {customer['location_description'] or 'WhatsApp Location'}<br>
+                <b>Source:</b> OxyPlus WhatsApp Bot<br>
+            </div>
+            '''
+            
+            folium.Marker(
+                location=[customer['latitude'], customer['longitude']],
+                popup=folium.Popup(popup_html, max_width=350),
+                tooltip=f"{customer['customer_name']} - WhatsApp - {customer['weekday']}",
+                icon=whatsapp_icon
+            ).add_to(m)
+        map_html = m._repr_html_()
     return map_html, comparison_data
 
 def generate_routes(csv_path, geojson_path, key=None):
