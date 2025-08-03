@@ -1676,9 +1676,6 @@ class VehicleDataWrapper:
         self._customer_info = None
         self._alert_logs = None
         
-        logging.basicConfig(level=logging.INFO)
-        self.logger = logging.getLogger(__name__)
-        
         self.load_all_data()
         self.load_customer_info()
         self.load_alert_logs()
@@ -1689,10 +1686,10 @@ class VehicleDataWrapper:
             with open(config_path, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except FileNotFoundError:
-            self.logger.warning(f"Config file not found: {config_path}")
+            print(f"Config file not found: {config_path}")
             return {}
         except json.JSONDecodeError:
-            self.logger.error(f"Invalid JSON in config file: {config_path}")
+            print(f"Invalid JSON in config file: {config_path}")
             return {}
     
     def load_customer_info(self):
@@ -1709,12 +1706,12 @@ class VehicleDataWrapper:
                     'customer_contact': str,
                     'description': str
                 })
-                self.logger.info(f"Loaded {len(self._customer_info)} customer records")
+                print(f"Loaded {len(self._customer_info)} customer records")
             else:
-                self.logger.warning(f"Customer info file not found: {customer_file}")
+                print(f"Customer info file not found: {customer_file}")
                 self._customer_info = pd.DataFrame()
         except Exception as e:
-            self.logger.error(f"Error loading customer info: {str(e)}")
+            print(f"Error loading customer info: {str(e)}")
             self._customer_info = pd.DataFrame()
     
     def load_alert_logs(self):
@@ -1731,12 +1728,12 @@ class VehicleDataWrapper:
                 if os.path.exists(file_path):
                     with open(file_path, 'r', encoding='utf-8') as f:
                         self._alert_logs[log_type] = json.load(f)
-                        self.logger.info(f"Loaded {log_type} from {file_path}")
+                        print(f"Loaded {log_type} from {file_path}")
                 else:
                     self._alert_logs[log_type] = {}
-                    self.logger.warning(f"Alert file not found: {file_path}")
+                    print(f"Alert file not found: {file_path}")
             except Exception as e:
-                self.logger.error(f"Error loading {log_type}: {str(e)}")
+                print(f"Error loading {log_type}: {str(e)}")
                 self._alert_logs[log_type] = {}
     
     def load_all_data(self):
@@ -1751,11 +1748,11 @@ class VehicleDataWrapper:
                         )
                         df = self._parse_datetime_columns(df, source)
                         self.data_sources[source][time_type] = df
-                        self.logger.info(f"Loaded {len(df)} records from {source}/{time_type}")
+                        print(f"Loaded {len(df)} records from {source}/{time_type}")
                     else:
-                        self.logger.warning(f"File not found: {file_path}")
+                        print(f"File not found: {file_path}")
                 except Exception as e:
-                    self.logger.error(f"Error loading {file_path}: {str(e)}")
+                    print(f"Error loading {file_path}: {str(e)}")
                     self.data_sources[source][time_type] = None
     
     def _parse_datetime_columns(self, df: pd.DataFrame, source: str) -> pd.DataFrame:
@@ -1826,6 +1823,7 @@ class VehicleDataWrapper:
     def get_filtered_data(self, start_date: datetime, end_date: datetime, 
                          vehicle_no: Optional[str] = None, 
                          reports: Optional[List[str]] = None) -> Dict:
+        self.reload_data()
         filtered_data = {}
         
         if reports:
@@ -1842,7 +1840,7 @@ class VehicleDataWrapper:
         
         for source in sources_to_process:
             if source not in self.data_sources:
-                self.logger.warning(f"Unknown source: {source}")
+                print(f"Unknown source: {source}")
                 continue
                 
             for time_type in ["current", "history"]:
@@ -1902,10 +1900,10 @@ class VehicleDataWrapper:
                     if not filtered_df.empty:
                         key = f"{source}_{time_type}"
                         filtered_data[key] = filtered_df
-                        self.logger.info(f"Filtered {source}_{time_type}: {len(filtered_df)} records")
+                        print(f"Filtered {source}_{time_type}: {len(filtered_df)} records")
                 
                 except Exception as e:
-                    self.logger.error(f"Error filtering {source}_{time_type}: {str(e)}")
+                    print(f"Error filtering {source}_{time_type}: {str(e)}")
                     continue
         
         return filtered_data
@@ -1952,10 +1950,10 @@ class VehicleDataWrapper:
                         combined_df = combined_df.sort_values(datetime_col)
                     
                     combined_data[key] = combined_df
-                    self.logger.info(f"Combined {key}: {len(combined_df)} total records")
+                    print(f"Combined {key}: {len(combined_df)} total records")
                     
                 except Exception as e:
-                    self.logger.error(f"Error combining {key}: {str(e)}")
+                    print(f"Error combining {key}: {str(e)}")
                     continue
         
         return combined_data
@@ -1999,14 +1997,14 @@ class VehicleDataWrapper:
         return None
     
     def reload_data(self):
-        self.logger.info("Reloading all data...")
+        print("DEBUG: Reloading all data...")
         self._vehicle_aliases = None
         self._customer_info = None
         self._alert_logs = None
         self.load_all_data()
         self.load_customer_info()
         self.load_alert_logs()
-        self.logger.info("Data reload completed")
+        print("DEBUG: Data reload completed")
 
 class VehicleRAGSystem:
     def __init__(self, data_wrapper: VehicleDataWrapper, gemini_api_key: str, 
