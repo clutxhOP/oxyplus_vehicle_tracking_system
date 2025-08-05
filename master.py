@@ -1062,7 +1062,7 @@ def schedule_jobs():
     
     schedule.every(15).minutes.do(data_extraction_and_formatting_job)
     schedule.every(10).minutes.do(alert_monitoring_job)
-    schedule.every(20).minutes.do(whatsapp_clean_job)
+    schedule.every(24).hours.do(whatsapp_clean_job)
     schedule.every(20).minutes.do(whatsapp_restart_job)
     schedule.every().day.at("01:00").do(preprocessing_job)
     schedule.every().day.at("07:00").do(clear_old_logs)
