@@ -147,9 +147,10 @@ This helps our delivery team find you quickly and ensure timely service!"""
     
     def generate_intelligent_response(self, message_text: str, phone_number: str, customer_name: str = "") -> str:
         openai_client = self.get_openai_client()
-        if not openai_client:
-            return self.get_fallback_response(message_text, customer_name)
-        
+        while not openai_client:
+            openai_client =  self.get_openai_client(message_text, customer_name)
+            print("Please Enter openAI key, waiting for it")
+            time.sleep(30)
         try:
             context = f"Customer name: {customer_name}" if customer_name else "Customer name not collected yet"
             
@@ -164,6 +165,7 @@ Generate a helpful, professional response (max 100 words) that:
 3. Reassures about privacy and legitimacy
 4. Encourages sharing name/location
 5. Stays friendly and professional
+6. If name is not collected please use Dear Customer or something similar
 
 If they refuse or have privacy concerns, be understanding but persistent.
 If they ask questions, answer briefly and redirect to sharing info.
@@ -174,7 +176,7 @@ Also tell them doing location and then name won't work the proper order is name 
             response = openai_client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=100,
+                max_tokens=150,
                 temperature=1.0
             )
             
@@ -182,89 +184,9 @@ Also tell them doing location and then name won't work the proper order is name 
             
         except Exception as e:
             print(f"Error with OpenAI response generation: {e}")
-            return self.get_fallback_response(message_text, customer_name)
-    
-    def get_fallback_response(self, message_text: str, customer_name: str = "") -> str:
-        message_lower = message_text.lower()
-        
-        if any(word in message_lower for word in ['privacy', 'why location', 'personal', 'safe']):
-            return """We completely understand your privacy concerns! 
-
-OxyPlus only uses your location to deliver water to your exact address. Your location is NEVER shared with third parties and is only used for delivery coordination.
-
-This is completely safe and secure. Would you like to proceed with sharing your location?"""
-        
-        elif any(word in message_lower for word in ['who is this', 'scam', 'fake', 'spam', 'suspicious']):
-            return """This is 100% legitimate - we're OxyPlus Water Delivery!
-
-✅ Licensed water delivery service in UAE
-✅ Visit our website: oxypluswater.com  
-✅ Thousands of satisfied customers
-
-We only need your location for delivery purposes. Completely safe and legitimate service!"""
-        
-        elif any(word in message_lower for word in ['what', 'dont understand', 'confused', 'explain']):
-            return """Let me explain clearly:
-
-🏢 OxyPlus = Premium Water Delivery Service
-📍 We need location = To deliver water to your address
-💧 What we do = Bring fresh drinking water to your door
-
-Just share your name and location using WhatsApp's location feature to get started!"""
-        
-        elif any(word in message_lower for word in ['no', 'not interested', 'stop', 'remove', 'dont want', 'wont', 'aint']):
-            return """We understand your hesitation! 
-
-OxyPlus provides premium water delivery service across UAE. We only need location to serve you better - completely safe and only used for delivery.
-
-Many customers were initially hesitant but are now happy with our service. Would you like to give us a try?"""
-        
-        elif any(word in message_lower for word in ['how much', 'price', 'cost', 'what service', 'expensive']):
-            return """Great question! OxyPlus offers:
-
-💧 Premium filtered water delivery
-🚚 Fast delivery across UAE  
-💰 Competitive and transparent pricing
-⚡ Same-day delivery available
-
-To see our complete service menu and pricing, please share your name and location first!"""
-        
-        else:
-            if customer_name:
-                return f"""Thank you for your message {customer_name}! 
-
-To proceed with your OxyPlus water delivery, we just need your location using WhatsApp's location feature.
-
-📍 Tap attachment → Location → Send Current Location
-
-This helps us coordinate your delivery efficiently!"""
-            else:
-                return """Thank you for your message! 
-
-To proceed with OxyPlus water delivery service, we need:
-1️⃣ Your name 
-2️⃣ Your location (using WhatsApp location feature)
-
-Could you please share your name first?"""
-    
+            return "Sorry couldn't understand what you said can you be more brief."
     def analyze_message_for_name(self, message_text: str) -> Optional[str]:
         if not message_text or len(message_text.strip()) < 2:
-            return None
-        
-        message_clean = message_text.strip()
-        message_lower = message_clean.lower()
-        
-        ignore_patterns = [
-            'what', 'why', 'when', 'where', 'how', 'ok', 'yes', 'no', 'sure',
-            'location', 'address', 'deliver', 'water', 'service', 'oxypluswater',
-            'hello', 'hi', 'thanks', 'thank you', 'please', 'help', 'understand',
-            'privacy', 'scam', 'fake', 'spam', 'stop', 'remove', 'price', 'cost'
-        ]
-        
-        if any(pattern in message_lower for pattern in ignore_patterns):
-            return None
-        
-        if len(message_clean) > 50:
             return None
         
         openai_client = self.get_openai_client()
@@ -284,13 +206,15 @@ Examples:
 "Mohammed" → Mohammed
 "What is this service?" → NO_NAME
 "I don't want this" → NO_NAME
-"Ahmad Ali" → Ahmad Ali"""
+"Ahmad Ali" → Ahmad Ali
+"Hey" -> NO_NAME
+"""
                 
                 response = openai_client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[{"role": "user", "content": prompt}],
                     max_tokens=50,
-                    temperature=1.0
+                    temperature=0.4
                 )
 
                 result = response.choices[0].message.content.strip()
@@ -300,24 +224,6 @@ Examples:
                     
             except Exception as e:
                 print(f"Error with OpenAI name extraction: {e}")
-        
-        words = message_clean.split()
-        if len(words) == 1 and 2 <= len(words[0]) <= 20 and words[0].isalpha():
-            return words[0].title()
-        elif len(words) == 2 and all(2 <= len(word) <= 15 and word.replace('-', '').isalpha() for word in words):
-            return ' '.join(word.title() for word in words)
-        
-        name_patterns = [
-            r'(?:my name is|i am|this is|call me)\s+([a-zA-Z\s]{2,30})',
-            r'^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)$'
-        ]
-        
-        for pattern in name_patterns:
-            match = re.search(pattern, message_clean, re.IGNORECASE)
-            if match:
-                potential_name = match.group(1).strip().title()
-                if 2 <= len(potential_name) <= 30:
-                    return potential_name
         
         return None
     
@@ -415,7 +321,7 @@ Examples:
                     'AWAITING_NAME', 
                     message_sent_at=datetime.now().isoformat()
                 )
-                time.sleep(3)
+                time.sleep(1)
         
         print("Finished sending initial messages")
     
@@ -511,7 +417,7 @@ Examples:
                     print(f"Processed {new_messages_processed} new messages")
                 
                 self.send_reminders_to_stalled_contacts()
-                time.sleep(20)
+                time.sleep(1)
                 
             except KeyboardInterrupt:
                 print("Monitoring stopped by user")
@@ -578,8 +484,10 @@ def main():
     print(f"Absolute path : {os.path.abspath(os.curdir)}")
     os.chdir(os.path.join(os.path.abspath(os.curdir),'whatsappbot'))
     openai_key = load_settings()['openai_api_key']
-    if not openai_key:
-        print("No OpenAI API key found. Using fallback responses only.")
+    while not openai_key:
+        print("No OpenAI api key found please enter it...")
+        openai_key = load_settings()['openai_api_key']
+        time.sleep(30)
     collector = IntelligentWhatsAppCollector()
     
     txt_file = 'contacts.txt'
