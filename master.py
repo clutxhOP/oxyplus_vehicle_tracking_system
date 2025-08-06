@@ -866,8 +866,9 @@ def data_extraction_and_formatting_job():
     quiet_start = dtime(1, 0)
     quiet_end = dtime(8, 0)
 
-    if quiet_start <= current_time or current_time < quiet_end:
-        print("DEBUG: Skipping extraction job execution due to quiet hours [9 PM - 8 AM]")
+    if quiet_start <= current_time < quiet_end:
+        print("DEBUG: Skipping extraction job execution due to quiet hours [1 AM - 8 AM]")
+        print(f"DEBUG: Current time is {current_time}")
         return False
 
     print("DEBUG: Starting data extraction")
@@ -912,7 +913,7 @@ def alert_monitoring_job():
     quiet_start = dtime(21, 0)
     quiet_end = dtime(9, 0)
 
-    if quiet_start <= current_time or current_time < quiet_end:
+    if quiet_start <= current_time < quiet_end:
         print("DEBUG: Skipping alert monitoring due to quiet hours [9 PM - 9 AM]")
         return
 
