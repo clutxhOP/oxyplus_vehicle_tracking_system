@@ -88,7 +88,11 @@ class TouchTraksLogin:
         else:
             options.add_argument('--start-maximized')
 
-        self.driver = uc.Chrome(options=options, headless=headless)
+        self.driver = uc.Chrome(
+            options=options,
+            headless=headless,
+            version_main=138
+        )
         self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         self.wait = WebDriverWait(self.driver, 20)
         self.driver.execute_script("document.body.style.zoom='50%'")

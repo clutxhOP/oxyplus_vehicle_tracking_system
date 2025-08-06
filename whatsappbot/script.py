@@ -7,7 +7,28 @@ import re
 import csv
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
-
+def reverse_geocode(latitude: float, longitude: float) -> str:
+    try:
+        url = f"https://nominatim.openstreetmap.org/reverse"
+        params = {
+            "lat": latitude,
+            "lon": longitude,
+            "format": "json",
+            "addressdetails": 1
+        }
+        headers = {
+            "User-Agent": "OxyPlusWaterDeliveryBot/1.0"
+        }
+        response = requests.get(url, params=params, headers=headers, timeout=10)
+        if response.status_code == 200:
+            data = response.json()
+            return data.get("display_name", "")
+        else:
+            print(f"Reverse geocode failed: {response.status_code}")
+            return ""
+    except Exception as e:
+        print(f"Error in reverse_geocode: {e}")
+        return ""
 def load_settings():
     json_path = "../config_data/app_settings.json"
     with open(json_path, 'r', encoding='utf-8') as f:
@@ -283,13 +304,17 @@ Examples:
     def save_location_data(self, phone_number: str, customer_name: str, location_data: Dict):
         try:
             location_info = location_data.get('location', {})
+            latitude = location_info.get('latitude', '')
+            longitude = location_info.get('longitude', '')
             
+            location_description = reverse_geocode(float(latitude), float(longitude)) if latitude and longitude else ""
+
             row_data = {
                 'customer_name': customer_name,
-                'latitude': location_info.get('latitude', ''),
-                'longitude': location_info.get('longitude', ''),
+                'latitude': latitude,
+                'longitude': longitude,
                 'contact': phone_number,
-                'location_description': location_info.get('description', ''),
+                'location_description': location_description,
                 'timestamp': location_info.get('timestamp', datetime.now().isoformat())
             }
             
@@ -299,7 +324,7 @@ Examples:
             else:
                 df.to_csv(self.extracted_data_file, index=False)
             
-            print(f"LOCATION SAVED: {customer_name} ({phone_number})")
+            print(f"LOCATION SAVED: {customer_name} ({phone_number}) - {location_description}")
         except Exception as e:
             print(f"Error saving location data: {e}")
     

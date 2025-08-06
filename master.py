@@ -863,7 +863,7 @@ def run_script_safely(module_name, func_name, *args):
 
 def data_extraction_and_formatting_job():
     current_time = datetime.now().time()
-    quiet_start = dtime(21, 0)
+    quiet_start = dtime(1, 0)
     quiet_end = dtime(8, 0)
 
     if quiet_start <= current_time or current_time < quiet_end:
