@@ -5,8 +5,15 @@ import json
 import os
 import re
 import csv
+import asyncio
+import aiohttp
+import threading
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from queue import Queue
+import random
+
 def reverse_geocode(latitude: float, longitude: float) -> str:
     try:
         url = f"https://nominatim.openstreetmap.org/reverse"
@@ -29,20 +36,32 @@ def reverse_geocode(latitude: float, longitude: float) -> str:
     except Exception as e:
         print(f"Error in reverse_geocode: {e}")
         return ""
+
 def load_settings():
     json_path = "../config_data/app_settings.json"
     with open(json_path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
-class IntelligentWhatsAppCollector:
+class EnhancedWhatsAppCollector:
     def __init__(self):
         self.contact_status_file = "contact_status.csv"
         self.extracted_data_file = "extracted_data.csv"
         self.processed_messages_file = "processed_messages.json"
+        self.rate_limit_file = "rate_limits.json"
+
+        self.message_queue = Queue()
+        self.processing_threads = []
+        self.is_running = False
+        self.max_workers = 5
+
+        self.last_message_time = self.load_rate_limits()
+        self.min_message_interval = 1
+        self.global_message_delay = 3
+        self.last_global_message = 0
         
         self.processed_messages = self.load_processed_messages()
         self._initialize_csv_files()
-        print("Intelligent WhatsApp Collector initialized")
+        print("Enhanced WhatsApp Collector initialized with parallel processing")
     
     def get_openai_client(self):
         openai_key = load_settings()['openai_api_key']
@@ -54,20 +73,60 @@ class IntelligentWhatsAppCollector:
     def get_whatsapp_url(self):
         return load_settings()['whatsapp_server_url'].rstrip('/')
     
+    def load_rate_limits(self) -> dict:
+        try:
+            if os.path.exists(self.rate_limit_file):
+                with open(self.rate_limit_file, 'r') as f:
+                    data = json.load(f)
+                    current_time = time.time()
+                    return {
+                        phone: timestamp 
+                        for phone, timestamp in data.items() 
+                        if current_time - timestamp < 3600
+                    }
+            return {}
+        except Exception as e:
+            print(f"Error loading rate limits: {e}")
+            return {}
+    
+    def save_rate_limits(self):
+        try:
+            with open(self.rate_limit_file, 'w') as f:
+                json.dump(self.last_message_time, f)
+        except Exception as e:
+            print(f"Error saving rate limits: {e}")
+    
     def load_processed_messages(self) -> set:
         try:
             if os.path.exists(self.processed_messages_file):
                 with open(self.processed_messages_file, 'r') as f:
                     data = json.load(f)
-                    return set(data.get('processed_ids', []))
+                    processed_ids = set(data.get('processed_ids', []))
+                    if 'timestamps' in data:
+                        current_time = time.time()
+                        valid_ids = set()
+                        for msg_id in processed_ids:
+                            timestamp = data['timestamps'].get(msg_id, 0)
+                            if current_time - timestamp < 86400:
+                                valid_ids.add(msg_id)
+                        return valid_ids
+                    return processed_ids
             return set()
         except:
             return set()
     
     def save_processed_messages(self):
         try:
+            current_time = time.time()
+            data = {
+                'processed_ids': list(self.processed_messages),
+                'timestamps': {msg_id: current_time for msg_id in self.processed_messages},
+                'last_updated': current_time
+            }
             with open(self.processed_messages_file, 'w') as f:
-                json.dump({'processed_ids': list(self.processed_messages)}, f)
+                json.dump(data, f)
+
+            self.save_rate_limits()
         except Exception as e:
             print(f"Error saving processed messages: {e}")
     
@@ -137,6 +196,32 @@ class IntelligentWhatsAppCollector:
             print(f"Error checking WhatsApp status: {e}")
             return False
     
+    def can_send_message(self, phone_number: str) -> bool:
+        current_time = time.time()
+
+        if current_time - self.last_global_message < self.global_message_delay:
+            return False
+
+        if phone_number in self.last_message_time:
+            time_since_last = current_time - self.last_message_time[phone_number]
+            if time_since_last < self.min_message_interval:
+                return False
+        
+        return True
+    
+    def _send_message_with_rate_limit(self, phone_number: str, message: str) -> bool:
+        if not self.can_send_message(phone_number):
+            return False
+        
+        success = self._send_message(phone_number, message)
+        if success:
+            current_time = time.time()
+            self.last_message_time[phone_number] = current_time
+            self.last_global_message = current_time
+            self.save_rate_limits()
+        
+        return success
+    
     def send_initial_location_request(self, phone_number: str) -> bool:
         message = """Hello! This is OxyPlus Water Delivery
 
@@ -151,7 +236,7 @@ This helps us deliver fresh water directly to your door!
 
 What's your name?"""
         
-        return self._send_message(phone_number, message)
+        return self._send_message_with_rate_limit(phone_number, message)
     
     def send_location_request_after_name(self, phone_number: str, customer_name: str) -> bool:
         message = f"""Thank you {customer_name}! 
@@ -164,18 +249,23 @@ Now please share your current location using WhatsApp's location feature:
 
 This helps our delivery team find you quickly and ensure timely service!"""
         
-        return self._send_message(phone_number, message)
+        return self._send_message_with_rate_limit(phone_number, message)
     
     def generate_intelligent_response(self, message_text: str, phone_number: str, customer_name: str = "") -> str:
         openai_client = self.get_openai_client()
-        while not openai_client:
-            openai_client =  self.get_openai_client(message_text, customer_name)
-            print("Please Enter openAI key, waiting for it")
-            time.sleep(30)
-        try:
-            context = f"Customer name: {customer_name}" if customer_name else "Customer name not collected yet"
-            
-            prompt = f"""You are a professional customer service representative for OxyPlus Water Delivery in UAE we are oxypluswater.com.
+        max_retries = 3
+        retry_count = 0
+        
+        while retry_count < max_retries:
+            try:
+                if not openai_client:
+                    openai_client = self.get_openai_client()
+                    if not openai_client:
+                        return "Sorry, I'm having technical difficulties. Please try again later."
+                
+                context = f"Customer name: {customer_name}" if customer_name else "Customer name not collected yet"
+                
+                prompt = f"""You are a professional customer service representative for OxyPlus Water Delivery in UAE we are oxypluswater.com.
 
 Customer message: "{message_text}"
 Context: {context}
@@ -193,19 +283,24 @@ If they ask questions, answer briefly and redirect to sharing info.
 If they seem confused, explain clearly what we need.
 Also tell them doing location and then name won't work the proper order is name first and location.
 """
-            
-            response = openai_client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=150,
-                temperature=1.0
-            )
-            
-            return response.choices[0].message.content.strip()
-            
-        except Exception as e:
-            print(f"Error with OpenAI response generation: {e}")
-            return "Sorry couldn't understand what you said can you be more brief."
+                
+                response = openai_client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": prompt}],
+                    max_tokens=150,
+                    temperature=1.0
+                )
+                
+                return response.choices[0].message.content.strip()
+                
+            except Exception as e:
+                retry_count += 1
+                print(f"OpenAI API error (attempt {retry_count}/{max_retries}): {e}")
+                if retry_count < max_retries:
+                    time.sleep(2 ** retry_count)  # Exponential backoff
+                
+        return "Sorry, couldn't understand what you said. Can you be more brief?"
+    
     def analyze_message_for_name(self, message_text: str) -> Optional[str]:
         if not message_text or len(message_text.strip()) < 2:
             return None
@@ -239,7 +334,6 @@ Examples:
                 )
 
                 result = response.choices[0].message.content.strip()
-                print("OPEN AI RESPONSE GENERATED")
                 if result and result != "NO_NAME" and 2 <= len(result) <= 30:
                     return result.title()
                     
@@ -336,9 +430,12 @@ Examples:
         pending_contacts = self.get_contacts_by_status('PENDING')
         print(f"Found {len(pending_contacts)} pending contacts")
         
-        for contact_info in pending_contacts:
+        success_count = 0
+        failed_count = 0
+        
+        for i, contact_info in enumerate(pending_contacts):
             phone_number = contact_info['contact']
-            print(f"Sending initial message to {phone_number}")
+            print(f"Sending initial message to {phone_number} ({i+1}/{len(pending_contacts)})")
             
             if self.send_initial_location_request(phone_number):
                 self.update_contact_status(
@@ -346,110 +443,177 @@ Examples:
                     'AWAITING_NAME', 
                     message_sent_at=datetime.now().isoformat()
                 )
+                success_count += 1
+            else:
+                failed_count += 1
+                print(f"Failed to send to {phone_number}")
+
+            time.sleep(1)
+        
+        print(f"Finished sending initial messages: {success_count} sent, {failed_count} failed")
+    
+    def process_single_message(self, message_data: dict, active_contacts: dict) -> bool:
+        try:
+            phone_number = message_data.get('from', '').replace('@c.us', '')
+            message_body = message_data.get('body', '')
+            message_type = message_data.get('type', '')
+            msg_id = message_data.get('id')
+            
+            if phone_number not in active_contacts:
+                return False
+            
+            contact_info = active_contacts[phone_number]
+            current_status = contact_info['status']
+            customer_name = contact_info.get('customer_name', '')
+            
+            print(f"PROCESSING: {phone_number} ({current_status}): {message_body[:50]}")
+            
+            if message_type == 'location':
+                if current_status in ['AWAITING_LOCATION', 'COLLECTING_LOCATION'] and customer_name:
+                    location_data = self.check_location_for_contact(phone_number)
+                    if location_data:
+                        self.save_location_data(phone_number, customer_name, location_data)
+                        
+                        self.update_contact_status(
+                            phone_number,
+                            'COMPLETED',
+                            location_received_at=datetime.now().isoformat()
+                        )
+                        
+                        thank_you_msg = f"Perfect! Thank you {customer_name}! Your location has been saved. Our OxyPlus team will contact you shortly to coordinate your premium water delivery. Thanks for choosing OxyPlus!"
+                        self._send_message_with_rate_limit(phone_number, thank_you_msg)
+                        
+                        print(f"COMPLETED: {customer_name} ({phone_number})")
+                        return True
+            
+            elif current_status == 'AWAITING_NAME' and message_body:
+                extracted_name = self.analyze_message_for_name(message_body)
+                
+                if extracted_name:
+                    self.update_contact_status(
+                        phone_number,
+                        'AWAITING_LOCATION',
+                        customer_name=extracted_name,
+                        name_collected_at=datetime.now().isoformat()
+                    )
+                    
+                    self.send_location_request_after_name(phone_number, extracted_name)
+                    print(f"NAME COLLECTED: {extracted_name} ({phone_number})")
+                    return True
+                else:
+                    response_msg = self.generate_intelligent_response(message_body, phone_number, customer_name)
+                    self._send_message_with_rate_limit(phone_number, response_msg)
+                    print(f"INTELLIGENT RESPONSE sent to {phone_number}")
+                    return True
+            
+            elif current_status in ['AWAITING_LOCATION', 'COLLECTING_LOCATION'] and message_body:
+                response_msg = self.generate_intelligent_response(message_body, phone_number, customer_name)
+                self._send_message_with_rate_limit(phone_number, response_msg)
+                print(f"INTELLIGENT RESPONSE sent to {phone_number}")
+                return True
+            
+            return False
+            
+        except Exception as e:
+            print(f"Error processing message from {phone_number}: {e}")
+            return False
+    
+    def graceful_shutdown(self):
+        print("Initiating graceful shutdown...")
+        self.is_running = False
+
+        self.save_processed_messages()
+        self.save_rate_limits()
+
+        for thread in self.processing_threads:
+            if thread.is_alive():
+                thread.join(timeout=30)
+        
+        print("Graceful shutdown completed")
+    
+    def process_messages_parallel(self, messages: List[dict], active_contacts: dict):
+        if not messages:
+            return
+
+        new_messages = [
+            msg for msg in messages 
+            if msg.get('id') not in self.processed_messages and not msg.get('fromMe', False)
+        ]
+        
+        if not new_messages:
+            return
+        
+        print(f"Processing {len(new_messages)} new messages in parallel...")
+
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            future_to_message = {
+                executor.submit(self.process_single_message, msg, active_contacts): msg 
+                for msg in new_messages
+            }
+
+            processed_count = 0
+            for future in as_completed(future_to_message):
+                message = future_to_message[future]
+                try:
+                    success = future.result()
+                    if success:
+                        processed_count += 1
+                    self.processed_messages.add(message.get('id'))
+                except Exception as e:
+                    print(f"Error in parallel processing: {e}")
+                    self.processed_messages.add(message.get('id'))
+
                 time.sleep(1)
         
-        print("Finished sending initial messages")
+        print(f"Parallel processing completed: {processed_count} messages processed successfully")
+        
+        if new_messages:
+            self.save_processed_messages()
     
     def process_incoming_messages(self):
-        print("Starting message monitoring - only processing NEW messages")
+        print("Starting enhanced message monitoring with parallel processing")
+        print(f"Loaded {len(self.processed_messages)} previously processed messages")
+        print(f"Loaded rate limits for {len(self.last_message_time)} contacts")
         
-        while True:
-            try:
-                if not self.check_whatsapp_status():
-                    print("WhatsApp not connected - waiting for connection")
-                    time.sleep(30)
-                    continue
-                
-                response = requests.get(f"{self.get_whatsapp_url()}/messages?limit=20", timeout=10)
-                if response.status_code != 200:
-                    print("Failed to fetch messages")
-                    time.sleep(30)
-                    continue
-                
-                messages_data = response.json()
-                messages = messages_data.get('messages', [])
-                
-                active_contacts = {}
-                for status in ['AWAITING_NAME', 'AWAITING_LOCATION', 'COLLECTING_LOCATION']:
-                    contacts = self.get_contacts_by_status(status)
-                    for contact in contacts:
-                        active_contacts[contact['contact']] = contact
-                
-                new_messages_processed = 0
-                
-                for message in messages:
-                    msg_id = message.get('id')
-                    
-                    if msg_id in self.processed_messages or message.get('fromMe', False):
+        self.is_running = True
+        
+        try:
+            while self.is_running:
+                try:
+                    if not self.check_whatsapp_status():
+                        print("WhatsApp not connected - waiting for connection")
+                        time.sleep(30)
+                        continue
+
+                    response = requests.get(f"{self.get_whatsapp_url()}/messages?limit=50", timeout=10)
+                    if response.status_code != 200:
+                        print("Failed to fetch messages")
+                        time.sleep(30)
                         continue
                     
-                    phone_number = message.get('from', '').replace('@c.us', '')
-                    message_body = message.get('body', '')
-                    message_type = message.get('type', '')
+                    messages_data = response.json()
+                    messages = messages_data.get('messages', [])
+
+                    active_contacts = {}
+                    for status in ['AWAITING_NAME', 'AWAITING_LOCATION', 'COLLECTING_LOCATION']:
+                        contacts = self.get_contacts_by_status(status)
+                        for contact in contacts:
+                            active_contacts[contact['contact']] = contact
+
+                    self.process_messages_parallel(messages, active_contacts)
+
+                    self.send_reminders_to_stalled_contacts()
+
+                    time.sleep(2)
                     
-                    if phone_number in active_contacts:
-                        contact_info = active_contacts[phone_number]
-                        current_status = contact_info['status']
-                        customer_name = contact_info.get('customer_name', '')
-                        
-                        print(f"NEW MESSAGE from {phone_number} ({current_status}): {message_body[:100]}")
-                        
-                        if message_type == 'location':
-                            if current_status in ['AWAITING_LOCATION', 'COLLECTING_LOCATION'] and customer_name:
-                                location_data = self.check_location_for_contact(phone_number)
-                                if location_data:
-                                    self.save_location_data(phone_number, customer_name, location_data)
-                                    
-                                    self.update_contact_status(
-                                        phone_number,
-                                        'COMPLETED',
-                                        location_received_at=datetime.now().isoformat()
-                                    )
-                                    
-                                    thank_you_msg = f"Perfect! Thank you {customer_name}! Your location has been saved. Our OxyPlus team will contact you shortly to coordinate your premium water delivery. Thanks for choosing OxyPlus!"
-                                    self._send_message(phone_number, thank_you_msg)
-                                    
-                                    print(f"COMPLETED: {customer_name} ({phone_number})")
-                        
-                        elif current_status == 'AWAITING_NAME' and message_body:
-                            extracted_name = self.analyze_message_for_name(message_body)
-                            
-                            if extracted_name:
-                                self.update_contact_status(
-                                    phone_number,
-                                    'AWAITING_LOCATION',
-                                    customer_name=extracted_name,
-                                    name_collected_at=datetime.now().isoformat()
-                                )
-                                
-                                self.send_location_request_after_name(phone_number, extracted_name)
-                                print(f"NAME COLLECTED: {extracted_name} ({phone_number})")
-                            else:
-                                response_msg = self.generate_intelligent_response(message_body, phone_number, customer_name)
-                                self._send_message(phone_number, response_msg)
-                                print(f"INTELLIGENT RESPONSE sent to {phone_number}")
-                        
-                        elif current_status in ['AWAITING_LOCATION', 'COLLECTING_LOCATION'] and message_body:
-                            response_msg = self.generate_intelligent_response(message_body, phone_number, customer_name)
-                            self._send_message(phone_number, response_msg)
-                            print(f"INTELLIGENT RESPONSE sent to {phone_number}")
-                        
-                        self.processed_messages.add(msg_id)
-                        new_messages_processed += 1
-                
-                if new_messages_processed > 0:
-                    self.save_processed_messages()
-                    print(f"Processed {new_messages_processed} new messages")
-                
-                self.send_reminders_to_stalled_contacts()
-                time.sleep(1)
-                
-            except KeyboardInterrupt:
-                print("Monitoring stopped by user")
-                break
-            except Exception as e:
-                print(f"Error in message processing: {e}")
-                time.sleep(30)
+                except KeyboardInterrupt:
+                    print("Monitoring stopped by user")
+                    break
+                except Exception as e:
+                    print(f"Error in message processing: {e}")
+                    time.sleep(30)
+        finally:
+            self.graceful_shutdown()
     
     def send_reminders_to_stalled_contacts(self):
         try:
@@ -464,7 +628,7 @@ Examples:
                     try:
                         collected_time = datetime.fromisoformat(name_collected_at)
                         time_diff = datetime.now() - collected_time
-                        
+
                         if 300 <= time_diff.total_seconds() <= 360:
                             reminder_msg = f"""Hi {customer_name}! We're still waiting for your location to complete your OxyPlus water delivery setup.
 
@@ -473,9 +637,9 @@ Please share your location using:
 
 This is required to provide you with our premium water delivery service."""
                             
-                            self._send_message(phone_number, reminder_msg)
-                            self.update_contact_status(phone_number, 'COLLECTING_LOCATION')
-                            print(f"REMINDER sent to {customer_name}")
+                            if self._send_message_with_rate_limit(phone_number, reminder_msg):
+                                self.update_contact_status(phone_number, 'COLLECTING_LOCATION')
+                                print(f"REMINDER sent to {customer_name}")
                     except:
                         pass
         except Exception as e:
@@ -498,22 +662,24 @@ This is required to provide you with our premium water delivery service."""
                 'awaiting_location': status_counts.get('AWAITING_LOCATION', 0),
                 'collecting_location': status_counts.get('COLLECTING_LOCATION', 0),
                 'completed': status_counts.get('COMPLETED', 0),
-                'locations_extracted': extracted_count
+                'locations_extracted': extracted_count,
+                'processed_messages_count': len(self.processed_messages)
             }
         except Exception as e:
             print(f"Error getting status summary: {e}")
             return {}
 
 def main():
-
     print(f"Absolute path : {os.path.abspath(os.curdir)}")
     os.chdir(os.path.join(os.path.abspath(os.curdir),'whatsappbot'))
+
     openai_key = load_settings()['openai_api_key']
     while not openai_key:
         print("No OpenAI api key found please enter it...")
         openai_key = load_settings()['openai_api_key']
         time.sleep(30)
-    collector = IntelligentWhatsAppCollector()
+    
+    collector = EnhancedWhatsAppCollector()
     
     txt_file = 'contacts.txt'
     if not os.path.exists(txt_file):
@@ -527,11 +693,37 @@ def main():
     
     collector.create_contact_status_csv(contacts)
     
-    print("Starting intelligent workflow")
+    print("Starting enhanced intelligent workflow with parallel processing")
+    print(f"Parallel workers: {collector.max_workers}")
+
+    import threading
+    
+    def message_processor():
+        print("Starting message monitoring thread...")
+        collector.process_incoming_messages()
+
+    monitor_thread = threading.Thread(target=message_processor, daemon=True)
+    monitor_thread.start()
+
+    time.sleep(2)
+
+    print("Sending initial messages (processing replies in parallel)...")
     collector.send_messages_to_pending_contacts()
     
-    print("Starting message monitoring - Press Ctrl+C to stop")
-    collector.process_incoming_messages()
+    print("Initial messages sent! Continuing to monitor replies...")
+    print("Press Ctrl+C to stop")
+    
+    try:
+        while monitor_thread.is_alive():
+            time.sleep(10)
+            status = collector.get_status_summary()
+            print(f"Status: Pending={status.get('pending', 0)}, "
+                  f"Awaiting Name={status.get('awaiting_name', 0)}, "
+                  f"Awaiting Location={status.get('awaiting_location', 0)}, "
+                  f"Completed={status.get('completed', 0)}")
+    except KeyboardInterrupt:
+        print("Shutting down...")
+        collector.graceful_shutdown()
 
 if __name__ == "__main__":
     main()
