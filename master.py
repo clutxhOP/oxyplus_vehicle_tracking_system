@@ -69,7 +69,7 @@ def stop_whatsapp_job():
 def whatsapp_restart_job():
     current_time = datetime.now().time()
     start_time = dtime(8, 0)
-    end_time = dtime(22, 0)
+    end_time = dtime(0, 0)
 
     if not (start_time <= current_time <= end_time):
         print("DEBUG: Skipping WhatsApp restart due to quiet hours")
@@ -1064,7 +1064,7 @@ def schedule_jobs():
     schedule.every(15).minutes.do(data_extraction_and_formatting_job)
     schedule.every(10).minutes.do(alert_monitoring_job)
     schedule.every(72).hours.do(whatsapp_clean_job)
-    schedule.every(20).minutes.do(whatsapp_restart_job)
+    schedule.every(60).minutes.do(whatsapp_restart_job)
     schedule.every().day.at("01:00").do(preprocessing_job)
     schedule.every().day.at("07:00").do(clear_old_logs)
     schedule.every().day.at("08:00").do(flask_restart_job)

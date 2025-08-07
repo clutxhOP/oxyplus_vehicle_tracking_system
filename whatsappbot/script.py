@@ -48,6 +48,7 @@ class EnhancedWhatsAppCollector:
         self.extracted_data_file = "extracted_data.csv"
         self.processed_messages_file = "processed_messages.json"
         self.rate_limit_file = "rate_limits.json"
+        self.outreach_state_file = "outreach_state.json"
 
         self.message_queue = Queue()
         self.processing_threads = []
@@ -55,13 +56,81 @@ class EnhancedWhatsAppCollector:
         self.max_workers = 5
 
         self.last_message_time = self.load_rate_limits()
-        self.min_message_interval = 1
-        self.global_message_delay = 3
+        self.min_reply_interval = 5
+        self.reply_delay_range = (8, 25)
+
+        self.base_outreach_delay = 90
+        self.outreach_delay_variance = 30
+        self.max_daily_outreach = 960
+        
         self.last_global_message = 0
+        self.outreach_state = self.load_outreach_state()
         
         self.processed_messages = self.load_processed_messages()
         self._initialize_csv_files()
-        print("Enhanced WhatsApp Collector initialized with parallel processing")
+        print("Enhanced WhatsApp Collector initialized with human-like timing")
+        print(f"Daily outreach limit: {self.max_daily_outreach} messages")
+        print(f"Outreach delay: {self.base_outreach_delay}±{self.outreach_delay_variance} seconds")
+    
+    def load_outreach_state(self) -> dict:
+        try:
+            if os.path.exists(self.outreach_state_file):
+                with open(self.outreach_state_file, 'r') as f:
+                    data = json.load(f)
+                    last_date = data.get('date', '')
+                    today = datetime.now().strftime('%Y-%m-%d')
+                    if last_date != today:
+                        return {
+                            'date': today,
+                            'sent_count': 0,
+                            'last_sent_time': 0,
+                            'current_batch_index': 0
+                        }
+                    return data
+            return {
+                'date': datetime.now().strftime('%Y-%m-%d'),
+                'sent_count': 0,
+                'last_sent_time': 0,
+                'current_batch_index': 0
+            }
+        except Exception as e:
+            print(f"Error loading outreach state: {e}")
+            return {
+                'date': datetime.now().strftime('%Y-%m-%d'),
+                'sent_count': 0,
+                'last_sent_time': 0,
+                'current_batch_index': 0
+            }
+    
+    def save_outreach_state(self):
+        try:
+            with open(self.outreach_state_file, 'w') as f:
+                json.dump(self.outreach_state, f)
+        except Exception as e:
+            print(f"Error saving outreach state: {e}")
+    
+    def get_human_like_outreach_delay(self) -> float:
+        delay = self.base_outreach_delay + random.randint(-self.outreach_delay_variance, self.outreach_delay_variance)
+
+        if random.random() < 0.1:
+            delay += random.randint(300, 900)
+            print(f"Taking a human-like break: {delay/60:.1f} minutes")
+        
+        return delay
+    
+    def get_human_like_reply_delay(self) -> float:
+        return random.randint(self.reply_delay_range[0], self.reply_delay_range[1])
+    
+    def can_send_outreach_message(self) -> bool:
+        current_time = time.time()
+
+        if self.outreach_state['sent_count'] >= self.max_daily_outreach:
+            return False
+
+        time_since_last = current_time - self.outreach_state.get('last_sent_time', 0)
+        required_delay = self.get_human_like_outreach_delay()
+        
+        return time_since_last >= required_delay
     
     def get_openai_client(self):
         openai_key = load_settings()['openai_api_key']
@@ -127,6 +196,7 @@ class EnhancedWhatsAppCollector:
                 json.dump(data, f)
 
             self.save_rate_limits()
+            self.save_outreach_state()
         except Exception as e:
             print(f"Error saving processed messages: {e}")
     
@@ -143,10 +213,16 @@ class EnhancedWhatsAppCollector:
     
     def load_contacts_from_txt(self, txt_file_path: str) -> List[str]:
         try:
+
             with open(txt_file_path, 'r', encoding='utf-8') as f:
-                contacts = [line.strip() for line in f if line.strip()]
+                contacts = [
+                    re.sub(r'[^\d]', '', line.strip())
+                    for line in f if line.strip()
+                ]
+
             print(f"Loaded {len(contacts)} contacts from {txt_file_path}")
             return contacts
+
         except Exception as e:
             print(f"Error loading contacts: {e}")
             return []
@@ -196,29 +272,45 @@ class EnhancedWhatsAppCollector:
             print(f"Error checking WhatsApp status: {e}")
             return False
     
-    def can_send_message(self, phone_number: str) -> bool:
+    def can_send_reply(self, phone_number: str) -> bool:
         current_time = time.time()
-
-        if current_time - self.last_global_message < self.global_message_delay:
-            return False
 
         if phone_number in self.last_message_time:
             time_since_last = current_time - self.last_message_time[phone_number]
-            if time_since_last < self.min_message_interval:
+            if time_since_last < self.min_reply_interval:
                 return False
         
         return True
     
-    def _send_message_with_rate_limit(self, phone_number: str, message: str) -> bool:
-        if not self.can_send_message(phone_number):
+    def _send_reply_with_rate_limit(self, phone_number: str, message: str) -> bool:
+        if not self.can_send_reply(phone_number):
+            print(f"Reply rate limited for {phone_number}")
             return False
+
+        delay = self.get_human_like_reply_delay()
+        print(f"Human-like reply delay: {delay} seconds for {phone_number}")
+        time.sleep(delay)
         
         success = self._send_message(phone_number, message)
         if success:
             current_time = time.time()
             self.last_message_time[phone_number] = current_time
-            self.last_global_message = current_time
             self.save_rate_limits()
+        
+        return success
+    
+    def _send_outreach_with_rate_limit(self, phone_number: str, message: str) -> bool:
+        """NEW: Separate rate limiting for outreach messages"""
+        if not self.can_send_outreach_message():
+            return False
+        
+        success = self._send_message(phone_number, message)
+        if success:
+            current_time = time.time()
+            self.outreach_state['last_sent_time'] = current_time
+            self.outreach_state['sent_count'] += 1
+            self.save_outreach_state()
+            print(f"Outreach sent ({self.outreach_state['sent_count']}/{self.max_daily_outreach})")
         
         return success
     
@@ -236,7 +328,7 @@ This helps us deliver fresh water directly to your door!
 
 What's your name?"""
         
-        return self._send_message_with_rate_limit(phone_number, message)
+        return self._send_outreach_with_rate_limit(phone_number, message)  # UPDATED: Use outreach rate limiting
     
     def send_location_request_after_name(self, phone_number: str, customer_name: str) -> bool:
         message = f"""Thank you {customer_name}! 
@@ -249,7 +341,7 @@ Now please share your current location using WhatsApp's location feature:
 
 This helps our delivery team find you quickly and ensure timely service!"""
         
-        return self._send_message_with_rate_limit(phone_number, message)
+        return self._send_reply_with_rate_limit(phone_number, message)
     
     def generate_intelligent_response(self, message_text: str, phone_number: str, customer_name: str = "") -> str:
         openai_client = self.get_openai_client()
@@ -297,7 +389,7 @@ Also tell them doing location and then name won't work the proper order is name 
                 retry_count += 1
                 print(f"OpenAI API error (attempt {retry_count}/{max_retries}): {e}")
                 if retry_count < max_retries:
-                    time.sleep(2 ** retry_count)  # Exponential backoff
+                    time.sleep(2 ** retry_count)
                 
         return "Sorry, couldn't understand what you said. Can you be more brief?"
     
@@ -422,20 +514,36 @@ Examples:
         except Exception as e:
             print(f"Error saving location data: {e}")
     
-    def send_messages_to_pending_contacts(self):
+    def send_messages_to_pending_contacts_gradually(self):
         if not self.check_whatsapp_status():
             print("WhatsApp not connected - cannot send messages")
             return
         
         pending_contacts = self.get_contacts_by_status('PENDING')
-        print(f"Found {len(pending_contacts)} pending contacts")
+
+        start_index = self.outreach_state.get('current_batch_index', 0)
+        remaining_contacts = pending_contacts[start_index:]
+        
+        if not remaining_contacts:
+            print("No pending contacts to process")
+            return
+
+        remaining_daily_quota = self.max_daily_outreach - self.outreach_state['sent_count']
+        contacts_to_process = min(len(remaining_contacts), remaining_daily_quota)
+        
+        print(f"Processing {contacts_to_process} contacts (Daily quota: {self.outreach_state['sent_count']}/{self.max_daily_outreach})")
         
         success_count = 0
-        failed_count = 0
+        processed_count = 0
         
-        for i, contact_info in enumerate(pending_contacts):
+        for i, contact_info in enumerate(remaining_contacts[:contacts_to_process]):
             phone_number = contact_info['contact']
-            print(f"Sending initial message to {phone_number} ({i+1}/{len(pending_contacts)})")
+            
+            if not self.can_send_outreach_message():
+                print(f"Daily outreach limit reached or waiting for next send window")
+                break
+            
+            print(f"Sending initial message to {phone_number} ({processed_count+1}/{contacts_to_process})")
             
             if self.send_initial_location_request(phone_number):
                 self.update_contact_status(
@@ -444,13 +552,23 @@ Examples:
                     message_sent_at=datetime.now().isoformat()
                 )
                 success_count += 1
-            else:
-                failed_count += 1
-                print(f"Failed to send to {phone_number}")
+            
+            processed_count += 1
+            self.outreach_state['current_batch_index'] = start_index + processed_count
+            self.save_outreach_state()
 
-            time.sleep(1)
+            if i < contacts_to_process - 1:
+                delay = self.get_human_like_outreach_delay()
+                print(f"Waiting {delay/60:.1f} minutes before next message...")
+                time.sleep(delay)
         
-        print(f"Finished sending initial messages: {success_count} sent, {failed_count} failed")
+        print(f"Outreach session completed: {success_count}/{processed_count} sent successfully")
+        print(f"Daily progress: {self.outreach_state['sent_count']}/{self.max_daily_outreach}")
+
+        if start_index + processed_count >= len(pending_contacts):
+            self.outreach_state['current_batch_index'] = 0
+            self.save_outreach_state()
+            print("All pending contacts processed. Batch index reset.")
     
     def process_single_message(self, message_data: dict, active_contacts: dict) -> bool:
         try:
@@ -481,7 +599,7 @@ Examples:
                         )
                         
                         thank_you_msg = f"Perfect! Thank you {customer_name}! Your location has been saved. Our OxyPlus team will contact you shortly to coordinate your premium water delivery. Thanks for choosing OxyPlus!"
-                        self._send_message_with_rate_limit(phone_number, thank_you_msg)
+                        self._send_reply_with_rate_limit(phone_number, thank_you_msg)  # UPDATED
                         
                         print(f"COMPLETED: {customer_name} ({phone_number})")
                         return True
@@ -502,13 +620,13 @@ Examples:
                     return True
                 else:
                     response_msg = self.generate_intelligent_response(message_body, phone_number, customer_name)
-                    self._send_message_with_rate_limit(phone_number, response_msg)
+                    self._send_reply_with_rate_limit(phone_number, response_msg)  # UPDATED
                     print(f"INTELLIGENT RESPONSE sent to {phone_number}")
                     return True
             
             elif current_status in ['AWAITING_LOCATION', 'COLLECTING_LOCATION'] and message_body:
                 response_msg = self.generate_intelligent_response(message_body, phone_number, customer_name)
-                self._send_message_with_rate_limit(phone_number, response_msg)
+                self._send_reply_with_rate_limit(phone_number, response_msg)  # UPDATED
                 print(f"INTELLIGENT RESPONSE sent to {phone_number}")
                 return True
             
@@ -524,6 +642,7 @@ Examples:
 
         self.save_processed_messages()
         self.save_rate_limits()
+        self.save_outreach_state()  # NEW
 
         for thread in self.processing_threads:
             if thread.is_alive():
@@ -604,7 +723,7 @@ Examples:
 
                     self.send_reminders_to_stalled_contacts()
 
-                    time.sleep(2)
+                    time.sleep(5)
                     
                 except KeyboardInterrupt:
                     print("Monitoring stopped by user")
@@ -616,6 +735,7 @@ Examples:
             self.graceful_shutdown()
     
     def send_reminders_to_stalled_contacts(self):
+        """UPDATED: Use reply rate limiting for reminders"""
         try:
             awaiting_location_contacts = self.get_contacts_by_status('AWAITING_LOCATION')
             
@@ -637,13 +757,51 @@ Please share your location using:
 
 This is required to provide you with our premium water delivery service."""
                             
-                            if self._send_message_with_rate_limit(phone_number, reminder_msg):
+                            if self._send_reply_with_rate_limit(phone_number, reminder_msg):  # UPDATED
                                 self.update_contact_status(phone_number, 'COLLECTING_LOCATION')
                                 print(f"REMINDER sent to {customer_name}")
                     except:
                         pass
         except Exception as e:
             print(f"Error sending reminders: {e}")
+    
+    def run_continuous_outreach(self):
+        """NEW: Continuous outreach management with human-like timing"""
+        print("Starting continuous outreach with human-like timing...")
+        
+        while self.is_running:
+            try:
+                if not self.check_whatsapp_status():
+                    print("WhatsApp not connected for outreach - waiting...")
+                    time.sleep(60)
+                    continue
+
+                today = datetime.now().strftime('%Y-%m-%d')
+                if self.outreach_state['date'] != today:
+                    print(f"New day detected. Resetting outreach counters.")
+                    self.outreach_state = {
+                        'date': today,
+                        'sent_count': 0,
+                        'last_sent_time': 0,
+                        'current_batch_index': 0
+                    }
+                    self.save_outreach_state()
+
+                if self.outreach_state['sent_count'] >= self.max_daily_outreach:
+                    print(f"Daily outreach limit reached ({self.max_daily_outreach}). Waiting for next day...")
+                    time.sleep(3600)
+                    continue
+
+                self.send_messages_to_pending_contacts_gradually()
+
+                time.sleep(300)
+                
+            except KeyboardInterrupt:
+                print("Outreach stopped by user")
+                break
+            except Exception as e:
+                print(f"Error in continuous outreach: {e}")
+                time.sleep(300)
     
     def get_status_summary(self) -> Dict:
         try:
@@ -663,7 +821,10 @@ This is required to provide you with our premium water delivery service."""
                 'collecting_location': status_counts.get('COLLECTING_LOCATION', 0),
                 'completed': status_counts.get('COMPLETED', 0),
                 'locations_extracted': extracted_count,
-                'processed_messages_count': len(self.processed_messages)
+                'processed_messages_count': len(self.processed_messages),
+                'daily_outreach_sent': self.outreach_state['sent_count'],
+                'daily_outreach_limit': self.max_daily_outreach,
+                'outreach_progress': f"{self.outreach_state['sent_count']}/{self.max_daily_outreach}"
             }
         except Exception as e:
             print(f"Error getting status summary: {e}")
@@ -693,36 +854,52 @@ def main():
     
     collector.create_contact_status_csv(contacts)
     
-    print("Starting enhanced intelligent workflow with parallel processing")
-    print(f"Parallel workers: {collector.max_workers}")
+    print("=" * 60)
+    print("ENHANCED WHATSAPP AUTOMATION WITH HUMAN-LIKE TIMING")
+    print("=" * 60)
+    print(f"Total contacts loaded: {len(contacts)}")
+    print(f"Daily outreach limit: {collector.max_daily_outreach} messages")
+    print(f"Outreach delay: {collector.base_outreach_delay}±{collector.outreach_delay_variance} seconds")
+    print(f"Reply delay: {collector.reply_delay_range[0]}-{collector.reply_delay_range[1]} seconds")
+    print(f"Reply workers: {collector.max_workers}")
+    print("=" * 60)
 
     import threading
     
-    def message_processor():
-        print("Starting message monitoring thread...")
+    def reply_processor():
+        print("Starting reply monitoring thread...")
         collector.process_incoming_messages()
 
-    monitor_thread = threading.Thread(target=message_processor, daemon=True)
-    monitor_thread.start()
+    def outreach_processor():
+        print("Starting outreach management thread...")
+        collector.run_continuous_outreach()
 
-    time.sleep(2)
-
-    print("Sending initial messages (processing replies in parallel)...")
-    collector.send_messages_to_pending_contacts()
+    reply_thread = threading.Thread(target=reply_processor, daemon=True)
+    outreach_thread = threading.Thread(target=outreach_processor, daemon=True)
     
-    print("Initial messages sent! Continuing to monitor replies...")
+    reply_thread.start()
+    time.sleep(2)
+    outreach_thread.start()
+    
+    print("Both threads started!")
+    print("Reply processing: Real-time with human-like delays")
+    print("Outreach processing: Gradual with 1.5±0.5 minute intervals")
     print("Press Ctrl+C to stop")
     
     try:
-        while monitor_thread.is_alive():
+        while reply_thread.is_alive() or outreach_thread.is_alive():
             time.sleep(10)
             status = collector.get_status_summary()
-            print(f"Status: Pending={status.get('pending', 0)}, "
-                  f"Awaiting Name={status.get('awaiting_name', 0)}, "
-                  f"Awaiting Location={status.get('awaiting_location', 0)}, "
-                  f"Completed={status.get('completed', 0)}")
+            print(f"""
+   STATUS UPDATE:
+   Pending: {status.get('pending', 0)}
+   Awaiting Name: {status.get('awaiting_name', 0)}
+   Awaiting Location: {status.get('awaiting_location', 0)}
+   Completed: {status.get('completed', 0)}
+   Daily Outreach: {status.get('outreach_progress', '0/0')}
+            """)
     except KeyboardInterrupt:
-        print("Shutting down...")
+        print("\nShutting down...")
         collector.graceful_shutdown()
 
 if __name__ == "__main__":
