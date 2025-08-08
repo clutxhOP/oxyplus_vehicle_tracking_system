@@ -1125,7 +1125,7 @@ def extract_all_data():
         requests = ["report","performance","idlereport","exidlereport","geofence"]
         if success:
             for request in requests:
-                seive_time = get_time_range_uae(60*24*30*2)
+                seive_time = get_time_range_uae(60*24*2)
                 if not touchtraks.keep_session_alive(css_selectors, request,seive_time[0],seive_time[1]):
                     print(f"Failed to process request, {request} halting further action.")
                     break
