@@ -213,7 +213,6 @@ class EnhancedWhatsAppCollector:
     
     def load_contacts_from_txt(self, txt_file_path: str) -> List[str]:
         try:
-
             with open(txt_file_path, 'r', encoding='utf-8') as f:
                 contacts = [
                     re.sub(r'[^\d]', '', line.strip())
@@ -300,7 +299,6 @@ class EnhancedWhatsAppCollector:
         return success
     
     def _send_outreach_with_rate_limit(self, phone_number: str, message: str) -> bool:
-        """NEW: Separate rate limiting for outreach messages"""
         if not self.can_send_outreach_message():
             return False
         
@@ -766,7 +764,6 @@ This is required to provide you with our premium water delivery service."""
             print(f"Error sending reminders: {e}")
     
     def run_continuous_outreach(self):
-        """NEW: Continuous outreach management with human-like timing"""
         print("Starting continuous outreach with human-like timing...")
         
         while self.is_running:

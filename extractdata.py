@@ -100,6 +100,7 @@ class TouchTraksLogin:
 
     def wait_for_downloads_complete(self, timeout=360):
         print("Waiting for all downloads to complete...")
+        time.sleep(120)
         start_time = time.time()
         
         while time.time() - start_time < timeout:
