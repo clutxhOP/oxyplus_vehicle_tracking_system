@@ -10,8 +10,8 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl wget unzip gnupg ca-certificates fonts-liberation \
-    libglib2.0-0 libnss3 libgconf-2-4 libxss1 libasound2 \
-    libappindicator1 xdg-utils libxml2-dev libxslt1-dev python3-dev \
+    libglib2.0-0 libnss3 libxss1 libasound2 \
+    xdg-utils libxml2-dev libxslt1-dev python3-dev \
     chromium chromium-driver psmisc procps \
     && rm -rf /var/lib/apt/lists/*
 
