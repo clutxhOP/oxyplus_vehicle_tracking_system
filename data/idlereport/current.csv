@@ -1,1 +1,287 @@
 Vehicle Number,Vehicle Model,Driver,Location,Idle From,Idle Till,Duration
+37923,PickUp,waqas,Oxy Office,2025-08-14 07:44:42,2025-08-14 07:46:41,00:01:59
+37923,PickUp,waqas,Staff Accomodation,2025-08-14 07:48:35,2025-08-14 07:49:10,00:00:35
+37923,PickUp,waqas,Ajman - United Arab Emirates,2025-08-14 07:51:06,2025-08-14 08:00:23,00:09:17
+37923,PickUp,waqas,Ajman - United Arab Emirates,2025-08-14 08:12:22,2025-08-14 08:13:22,00:01:00
+37923,PickUp,waqas,Ajman - United Arab Emirates,2025-08-14 08:22:17,2025-08-14 08:29:17,00:07:00
+37923,PickUp,waqas,Ajman - United Arab Emirates,2025-08-14 08:31:05,2025-08-14 08:37:05,00:06:00
+30917,PickUp,Touqeer,Oxy Office,2025-08-14 08:35:10,2025-08-14 08:38:28,00:03:18
+36386,Canter,saqlain,Oxy Office,2025-08-14 08:35:47,2025-08-14 08:38:44,00:02:57
+36386,Canter,saqlain,"Jiddah Street,Ajman,United Arab Emirates",2025-08-14 08:39:44,2025-08-14 08:41:08,00:01:24
+37923,PickUp,waqas,Ajman - United Arab Emirates,2025-08-14 08:42:40,2025-08-14 08:43:33,00:00:53
+49570,Canter,amir,Oxy Office,2025-08-14 08:47:14,2025-08-14 08:54:32,00:07:18
+34261,PickUp,aboobaker,Oxy Office,2025-08-14 08:49:33,2025-08-14 08:56:24,00:06:51
+36386,Canter,saqlain,Ajman - United Arab Emirates,2025-08-14 08:49:38,2025-08-14 08:50:11,00:00:33
+30915,PickUp,ghaffar sr,Oxy Office,2025-08-14 08:49:40,2025-08-14 08:50:23,00:00:43
+30917,PickUp,Touqeer,Oxy Office,2025-08-14 08:51:52,2025-08-14 08:53:45,00:01:53
+34259,PickUp,OFFICE,Oxy Office,2025-08-14 08:52:18,2025-08-14 08:53:43,00:01:25
+30941,PickUp,Ghaffar jr,Oxy Office,2025-08-14 08:53:30,2025-08-14 08:53:49,00:00:19
+34259,PickUp,OFFICE,"Jiddah Street,Ajman,United Arab Emirates",2025-08-14 08:54:43,2025-08-14 08:55:15,00:00:32
+30917,PickUp,Touqeer,"Jiddah Street,Ajman,United Arab Emirates",2025-08-14 08:54:45,2025-08-14 08:55:43,00:00:58
+36386,Canter,saqlain,Ajman - United Arab Emirates,2025-08-14 08:55:57,2025-08-14 08:56:25,00:00:28
+49570,Canter,amir,"Jiddah Street,Al Jerf Industrial 1,Ajman,United Arab Emirates",2025-08-14 08:57:08,2025-08-14 08:57:33,00:00:25
+30941,PickUp,Ghaffar jr,Oxy Office,2025-08-14 08:57:11,2025-08-14 08:57:41,00:00:30
+30941,PickUp,Ghaffar jr,"Jiddah Street,Ajman,United Arab Emirates",2025-08-14 08:58:41,2025-08-14 09:03:05,00:04:24
+34259,PickUp,OFFICE,Al Jerf Industrial 1 - Ajman - United Arab Emirates,2025-08-14 08:59:08,2025-08-14 09:09:46,00:10:38
+36346,PickUp,Majid,Oxy Office,2025-08-14 08:59:56,2025-08-14 09:03:01,00:03:05
+30917,PickUp,Touqeer,"MOHAMMED BIN RASHID AL MAKTOUM Road,Ajman,United Arab Emirates",2025-08-14 08:59:56,2025-08-14 09:01:26,00:01:30
+36386,Canter,saqlain,Ajman - United Arab Emirates,2025-08-14 09:00:42,2025-08-14 09:01:42,00:01:00
+37923,PickUp,waqas,"Unnamed Road,Sharjah,United Arab Emirates",2025-08-14 09:01:20,2025-08-14 09:02:20,00:01:00
+37923,PickUp,waqas,"Unnamed Road,Sharjah,United Arab Emirates",2025-08-14 09:03:50,2025-08-14 09:13:50,00:10:00
+34259,PickUp,OFFICE,Al Jerf Industrial 1 - Ajman - United Arab Emirates,2025-08-14 09:10:46,2025-08-14 09:11:03,00:00:17
+34259,PickUp,OFFICE,Ajman - United Arab Emirates,2025-08-14 09:12:38,2025-08-14 09:13:02,00:00:24
+30915,PickUp,ghaffar sr,Oxy Office,2025-08-14 09:14:34,2025-08-14 09:19:09,00:04:35
+36386,Canter,saqlain,Industrial Area 13 - Sharjah - United Arab Emirates,2025-08-14 09:15:23,2025-08-14 09:17:23,00:02:00
+37923,PickUp,waqas,"Unnamed Road,Sharjah,United Arab Emirates",2025-08-14 09:15:29,2025-08-14 09:16:29,00:01:00
+37923,PickUp,waqas,"Unnamed Road,Sharjah,United Arab Emirates",2025-08-14 09:17:29,2025-08-14 09:25:21,00:07:52
+30917,PickUp,Touqeer,"Al Wahda Street,Al Ghubaiba,Halwan Suburb,Sharjah,United Arab Emirates",2025-08-14 09:18:12,2025-08-14 09:19:12,00:01:00
+36386,Canter,saqlain,Industrial Area 13 - Sharjah - United Arab Emirates,2025-08-14 09:18:23,2025-08-14 09:19:23,00:01:00
+36346,PickUp,Majid,Oxy Office,2025-08-14 09:19:15,2025-08-14 09:28:28,00:09:13
+30917,PickUp,Touqeer,Industrial Area 4 - Sharjah - United Arab Emirates,2025-08-14 09:20:12,2025-08-14 09:22:06,00:01:54
+36386,Canter,saqlain,Industrial Area 13 - Sharjah - United Arab Emirates,2025-08-14 09:20:23,2025-08-14 09:22:23,00:02:00
+36389,Canter,hassan,Oxy Office,2025-08-14 09:21:15,2025-08-14 09:31:35,00:10:20
+30917,PickUp,Touqeer,Abu Shagara - Sharjah - United Arab Emirates,2025-08-14 09:24:44,2025-08-14 09:39:10,00:14:26
+37923,PickUp,waqas,"Unnamed Road,Sharjah,United Arab Emirates",2025-08-14 09:28:25,2025-08-14 09:42:19,00:13:54
+B-30942,PickUp,sayed,Oxy Office,2025-08-14 09:31:51,2025-08-14 09:32:22,00:00:31
+30941,PickUp,Ghaffar jr,Industrial Area 13 - Sharjah - United Arab Emirates,2025-08-14 09:32:23,2025-08-14 09:33:23,00:01:00
+36346,PickUp,Majid,"MOHAMMED BIN RASHID AL MAKTOUM Road,Ajman,United Arab Emirates",2025-08-14 09:33:11,2025-08-14 09:34:11,00:01:00
+49570,Canter,amir,"Jiddah Street,Al Jerf Industrial 1,Ajman,United Arab Emirates",2025-08-14 09:34:56,2025-08-14 09:37:30,00:02:34
+36346,PickUp,Majid,"MOHAMMED BIN RASHID AL MAKTOUM Road,Ajman,United Arab Emirates",2025-08-14 09:35:11,2025-08-14 09:35:41,00:00:30
+30915,PickUp,ghaffar sr,Al Nuaimia 1 - Ajman - United Arab Emirates,2025-08-14 09:36:08,2025-08-14 09:45:03,00:08:55
+34261,PickUp,aboobaker,"Jiddah Street,Al Jerf Industrial 1,Ajman,United Arab Emirates",2025-08-14 09:37:07,2025-08-14 09:38:38,00:01:31
+30941,PickUp,Ghaffar jr,Muwailih Commercial - Sharjah - United Arab Emirates,2025-08-14 09:38:23,2025-08-14 09:39:23,00:01:00
+B-30942,PickUp,sayed,Ajman - United Arab Emirates,2025-08-14 09:40:09,2025-08-14 09:41:09,00:01:00
+30917,PickUp,Touqeer,Abu Shagara - Sharjah - United Arab Emirates,2025-08-14 09:40:10,2025-08-14 09:56:37,00:16:27
+34259,PickUp,OFFICE,Industrial Area 6 - Sharjah - United Arab Emirates,2025-08-14 09:40:22,2025-08-14 09:41:37,00:01:15
+30941,PickUp,Ghaffar jr,"Sharjah Ring Road & Sheikh Mohammed Bin Zayed Road,Muwailih Commercial,Industrial Area,Sharjah,United Arab Emirates",2025-08-14 09:41:23,2025-08-14 09:42:23,00:01:00
+33254,Canter,sudhakar,Ajman - United Arab Emirates,2025-08-14 09:41:54,2025-08-14 09:42:16,00:00:22
+49570,Canter,amir,Ajman - United Arab Emirates,2025-08-14 09:42:29,2025-08-14 09:43:29,00:01:00
+B-30942,PickUp,sayed,Ajman - United Arab Emirates,2025-08-14 09:42:50,2025-08-14 09:47:44,00:04:54
+33254,Canter,sudhakar,Ajman - United Arab Emirates,2025-08-14 09:43:16,2025-08-14 09:45:33,00:02:17
+37923,PickUp,waqas,"Unnamed Road,Sharjah,United Arab Emirates",2025-08-14 09:43:51,2025-08-14 09:44:31,00:00:40
+49570,Canter,amir,"MOHAMMED BIN RASHID AL MAKTOUM Road,Ajman,United Arab Emirates",2025-08-14 09:44:29,2025-08-14 09:45:23,00:00:54
+34261,PickUp,aboobaker,Ajman - United Arab Emirates,2025-08-14 09:45:12,2025-08-14 09:48:55,00:03:43
+36346,PickUp,Majid,Wasit suburb - Sharjah - United Arab Emirates,2025-08-14 09:46:46,2025-08-14 09:49:46,00:03:00
+36386,Canter,saqlain,Fortune Plaza Hotel 2 - Dubai - United Arab Emirates,2025-08-14 09:48:20,2025-08-14 09:49:20,00:01:00
+36386,Canter,saqlain,"Twar, Union Cooperative Society - Dubai - United Arab Emirates",2025-08-14 09:51:20,2025-08-14 09:52:20,00:01:00
+36346,PickUp,Majid,"Wasit Street,Al Abar,Halwan Suburb,Mughaidir Suburb,Sharjah,United Arab Emirates",2025-08-14 09:51:46,2025-08-14 09:52:46,00:01:00
+30915,PickUp,ghaffar sr,Ajman - United Arab Emirates,2025-08-14 09:52:09,2025-08-14 09:53:15,00:01:06
+34259,PickUp,OFFICE,Industrial Area 6 - Sharjah - United Arab Emirates,2025-08-14 09:52:22,2025-08-14 09:53:52,00:01:30
+36346,PickUp,Majid,"252,Industrial Area 5,Industrial Area 6,Halwan Suburb,Mughaidir Suburb,Industrial Area,Sharjah,United Arab Emirates",2025-08-14 09:53:46,2025-08-14 09:55:46,00:02:00
+B-30942,PickUp,sayed,"شارع الخيل,Al Jerf 2,Ajman,United Arab Emirates",2025-08-14 09:53:52,2025-08-14 10:02:30,00:08:38
+30915,PickUp,ghaffar sr,Al Rashidiya 3 - Ajman - United Arab Emirates,2025-08-14 09:54:15,2025-08-14 10:00:14,00:05:59
+34261,PickUp,aboobaker,"Unnamed Road,Al Hamidiya 2,Ajman,United Arab Emirates",2025-08-14 09:54:51,2025-08-14 09:59:51,00:05:00
+34259,PickUp,OFFICE,Industrial Area 6 - Sharjah - United Arab Emirates,2025-08-14 09:54:52,2025-08-14 09:55:13,00:00:21
+36386,Canter,saqlain,"MAB Group,Al Nahda Street,Dubai,United Arab Emirates",2025-08-14 09:55:20,2025-08-14 09:57:51,00:02:31
+49570,Canter,amir,Al Rashidiya 2 - Ajman - United Arab Emirates,2025-08-14 09:55:52,2025-08-14 10:10:41,00:14:49
+34259,PickUp,OFFICE,Industrial Area 6 - Sharjah - United Arab Emirates,2025-08-14 09:56:41,2025-08-14 09:59:41,00:03:00
+33254,Canter,sudhakar,Al Jerf 1 - Ajman - United Arab Emirates,2025-08-14 09:56:50,2025-08-14 09:57:50,00:01:00
+36386,Canter,saqlain,Dubai Folklore Theatre 1 - Dubai - United Arab Emirates,2025-08-14 09:58:51,2025-08-14 10:00:15,00:01:24
+34259,PickUp,OFFICE,Industrial Area 6 - Sharjah - United Arab Emirates,2025-08-14 10:00:41,2025-08-14 10:03:17,00:02:36
+33254,Canter,sudhakar,Ajman - United Arab Emirates,2025-08-14 10:02:29,2025-08-14 10:02:43,00:00:14
+36346,PickUp,Majid,Industrial Area 13 - Sharjah - United Arab Emirates,2025-08-14 10:02:39,2025-08-14 10:08:52,00:06:13
+36386,Canter,saqlain,"232,Hamriya Shopping Center 1,Deira,Dubai,United Arab Emirates",2025-08-14 10:03:20,2025-08-14 10:04:20,00:01:00
+30915,PickUp,ghaffar sr,Ajman - United Arab Emirates,2025-08-14 10:04:13,2025-08-14 10:04:59,00:00:46
+30941,PickUp,Ghaffar jr,Al Qusais - Dubai - United Arab Emirates,2025-08-14 10:04:21,2025-08-14 10:06:44,00:02:23
+36386,Canter,saqlain,Abu Hail - Dubai - United Arab Emirates,2025-08-14 10:05:20,2025-08-14 10:06:20,00:01:00
+30915,PickUp,ghaffar sr,Ajman - United Arab Emirates,2025-08-14 10:05:59,2025-08-14 10:06:59,00:01:00
+30917,PickUp,Touqeer,Industrial Area 7 - Sharjah - United Arab Emirates,2025-08-14 10:07:48,2025-08-14 10:08:48,00:01:00
+34261,PickUp,aboobaker,Ajman - United Arab Emirates,2025-08-14 10:10:19,2025-08-14 10:11:11,00:00:52
+30941,PickUp,Ghaffar jr,Al Twar - Dubai - United Arab Emirates,2025-08-14 10:10:56,2025-08-14 10:12:56,00:02:00
+36386,Canter,saqlain,"Abu Hail, Bin Eid Al Shabi Restaurant 2 - Dubai - United Arab Emirates",2025-08-14 10:10:56,2025-08-14 10:16:50,00:05:54
+36346,PickUp,Majid,Industrial Area 13 - Sharjah - United Arab Emirates,2025-08-14 10:11:16,2025-08-14 10:21:16,00:10:00
+30917,PickUp,Touqeer,Al Ittihad Rd - Sharjah - United Arab Emirates,2025-08-14 10:11:17,2025-08-14 10:15:24,00:04:07
+30915,PickUp,ghaffar sr,Ajman - United Arab Emirates,2025-08-14 10:11:33,2025-08-14 10:12:05,00:00:32
+34261,PickUp,aboobaker,Ajman - United Arab Emirates,2025-08-14 10:12:11,2025-08-14 10:20:03,00:07:52
+30941,PickUp,Ghaffar jr,Traffic Police Department 1 - Dubai - United Arab Emirates,2025-08-14 10:13:56,2025-08-14 10:14:56,00:01:00
+33254,Canter,sudhakar,Al Rashidiya 3 - Ajman - United Arab Emirates,2025-08-14 10:14:34,2025-08-14 10:32:22,00:17:48
+30941,PickUp,Ghaffar jr,"11,Hor Al Anz East,Deira,Dubai,United Arab Emirates",2025-08-14 10:15:56,2025-08-14 10:16:54,00:00:58
+30915,PickUp,ghaffar sr,Al Nakhil 1 - Ajman - United Arab Emirates,2025-08-14 10:18:21,2025-08-14 10:18:27,00:00:06
+30915,PickUp,ghaffar sr,Al Nakhil 1 - Ajman - United Arab Emirates,2025-08-14 10:19:36,2025-08-14 10:26:26,00:06:50
+36386,Canter,saqlain,Deira - Dubai - United Arab Emirates,2025-08-14 10:20:39,2025-08-14 10:21:54,00:01:15
+34261,PickUp,aboobaker,Ajman - United Arab Emirates,2025-08-14 10:22:05,2025-08-14 10:38:32,00:16:27
+30941,PickUp,Ghaffar jr,Deira - Dubai - United Arab Emirates,2025-08-14 10:23:37,2025-08-14 10:25:34,00:01:57
+37923,PickUp,waqas,Al Tayebah - Sharjah - United Arab Emirates,2025-08-14 10:24:16,2025-08-14 10:24:46,00:00:30
+36386,Canter,saqlain,Hor Al Anz East - Dubai - United Arab Emirates,2025-08-14 10:24:54,2025-08-14 10:29:25,00:04:31
+36346,PickUp,Majid,Al Tarfa - Sharjah - United Arab Emirates,2025-08-14 10:25:12,2025-08-14 10:26:36,00:01:24
+30941,PickUp,Ghaffar jr,Deira - Dubai - United Arab Emirates,2025-08-14 10:26:34,2025-08-14 10:28:14,00:01:40
+37923,PickUp,waqas,Al Tayebah - Sharjah - United Arab Emirates,2025-08-14 10:27:14,2025-08-14 10:28:35,00:01:21
+37923,PickUp,waqas,Al Tayebah - Sharjah - United Arab Emirates,2025-08-14 10:29:35,2025-08-14 10:30:34,00:00:59
+30915,PickUp,ghaffar sr,Sheikh Rashid Bin Humeed Street Ajman United Arab Emirates,2025-08-14 10:31:24,2025-08-14 10:35:26,00:04:02
+36346,PickUp,Majid,Halwan Suburb - Sharjah - United Arab Emirates,2025-08-14 10:31:56,2025-08-14 10:34:55,00:02:59
+37923,PickUp,waqas,Al Tayebah - Sharjah - United Arab Emirates,2025-08-14 10:32:43,2025-08-14 10:34:43,00:02:00
+30941,PickUp,Ghaffar jr,8th Street,2025-08-14 10:32:44,2025-08-14 10:42:50,00:10:06
+34259,PickUp,OFFICE,23 Third Industrial St - Sharjah - United Arab Emirates,2025-08-14 10:33:31,2025-08-14 10:49:17,00:15:46
+36386,Canter,saqlain,Al Khabaisi - Dubai - United Arab Emirates,2025-08-14 10:33:43,2025-08-14 10:36:48,00:03:05
+33254,Canter,sudhakar,Al Rashidiya 3 - Ajman - United Arab Emirates,2025-08-14 10:35:06,2025-08-14 10:35:43,00:00:37
+36346,PickUp,Majid,Al Abar - Sharjah - United Arab Emirates,2025-08-14 10:35:55,2025-08-14 10:36:55,00:01:00
+36389,Canter,hassan,Industrial Area 13 - Sharjah - United Arab Emirates,2025-08-14 10:35:56,2025-08-14 10:36:56,00:01:00
+37923,PickUp,waqas,Al Tayebah - Sharjah - United Arab Emirates,2025-08-14 10:37:19,2025-08-14 10:38:56,00:01:37
+33254,Canter,sudhakar,Al Rumailah - Ajman - United Arab Emirates,2025-08-14 10:37:32,2025-08-14 10:39:32,00:02:00
+36346,PickUp,Majid,Halwan Suburb - Sharjah - United Arab Emirates,2025-08-14 10:38:55,2025-08-14 10:39:55,00:01:00
+33254,Canter,sudhakar,AL Mirgab - Sharjah - United Arab Emirates,2025-08-14 10:40:32,2025-08-14 10:42:32,00:02:00
+34261,PickUp,aboobaker,Ajman - United Arab Emirates,2025-08-14 10:40:59,2025-08-14 10:50:24,00:09:25
+36386,Canter,saqlain,"2,Port Saeed,Deira,Dubai,United Arab Emirates",2025-08-14 10:41:25,2025-08-14 10:44:25,00:03:00
+49570,Canter,amir,Al Rashidiya 2 - Ajman - United Arab Emirates,2025-08-14 10:42:01,2025-08-14 10:48:36,00:06:35
+36346,PickUp,Majid,"105,Progress Monument,Al Musalla,Al Gharb,Sharjah,United Arab Emirates",2025-08-14 10:42:55,2025-08-14 10:43:20,00:00:25
+30915,PickUp,ghaffar sr,Sheikh Rashid Bin Humeed Street Ajman United Arab Emirates,2025-08-14 10:43:42,2025-08-14 10:44:03,00:00:21
+37923,PickUp,waqas,"Unnamed Road,Al Tayebah,Al Dhaid,Sharjah,United Arab Emirates",2025-08-14 10:44:02,2025-08-14 10:47:02,00:03:00
+30915,PickUp,ghaffar sr,Sheikh Rashid Bin Humeed Street Ajman United Arab Emirates,2025-08-14 10:45:03,2025-08-14 10:47:05,00:02:02
+33254,Canter,sudhakar,Al Heerah Suburb - Sharjah - United Arab Emirates,2025-08-14 10:46:32,2025-08-14 10:47:32,00:01:00
+36386,Canter,saqlain,Deira City Centre Metro Station 2 - Dubai - United Arab Emirates,2025-08-14 10:47:19,2025-08-14 10:49:19,00:02:00
+30941,PickUp,Ghaffar jr,Al Murar - Dubai - United Arab Emirates,2025-08-14 10:48:04,2025-08-14 10:53:24,00:05:20
+30915,PickUp,ghaffar sr,Al Nakhil 1 - Ajman - United Arab Emirates,2025-08-14 10:48:05,2025-08-14 10:53:56,00:05:51
+34259,PickUp,OFFICE,"Maliha Road,Industrial Area 6,Industrial Area,Sharjah,United Arab Emirates",2025-08-14 10:50:17,2025-08-14 10:51:17,00:01:00
+49570,Canter,amir,"8,Al Rashidiya 1,Ajman,United Arab Emirates",2025-08-14 10:51:43,2025-08-14 10:52:45,00:01:02
+36386,Canter,saqlain,"23,Port Saeed,Deira,Dubai,United Arab Emirates",2025-08-14 10:52:23,2025-08-14 11:02:22,00:09:59
+34261,PickUp,aboobaker,Ajman - United Arab Emirates,2025-08-14 10:52:49,2025-08-14 10:53:37,00:00:48
+49570,Canter,amir,2 Al Nuaimia - Ajman - United Arab Emirates,2025-08-14 10:54:21,2025-08-14 11:06:34,00:12:13
+34259,PickUp,OFFICE,"155,Industrial Area 6,Industrial Area,Sharjah,United Arab Emirates",2025-08-14 10:54:46,2025-08-14 10:55:45,00:00:59
+34261,PickUp,aboobaker,Ajman - United Arab Emirates,2025-08-14 10:56:39,2025-08-14 10:57:31,00:00:52
+30941,PickUp,Ghaffar jr,8th Street,2025-08-14 10:56:46,2025-08-14 10:57:18,00:00:32
+34259,PickUp,OFFICE,"178,Industrial Area 5,Industrial Area 6,Industrial Area,Sharjah,United Arab Emirates",2025-08-14 10:58:13,2025-08-14 11:08:42,00:10:29
+33254,Canter,sudhakar,Bu Tina - Sharjah - United Arab Emirates,2025-08-14 10:58:25,2025-08-14 11:03:18,00:04:53
+34261,PickUp,aboobaker,Ajman - United Arab Emirates,2025-08-14 10:58:31,2025-08-14 11:00:31,00:02:00
+36389,Canter,hassan,Al Qusais - Dubai - United Arab Emirates,2025-08-14 11:00:16,2025-08-14 11:02:16,00:02:00
+30915,PickUp,ghaffar sr,Al Rumailah - Ajman - United Arab Emirates,2025-08-14 11:00:26,2025-08-14 11:03:42,00:03:16
+37923,PickUp,waqas,Al Tayebah - Sharjah - United Arab Emirates,2025-08-14 11:01:50,2025-08-14 11:02:42,00:00:52
+34261,PickUp,aboobaker,Al Rawda 2 - Ajman - United Arab Emirates,2025-08-14 11:01:59,2025-08-14 11:11:44,00:09:45
+30941,PickUp,Ghaffar jr,"Burj Nahar, Intersection 2 - Dubai - United Arab Emirates",2025-08-14 11:02:49,2025-08-14 11:06:49,00:04:00
+36389,Canter,hassan,"Twar, Union Cooperative Society - Dubai - United Arab Emirates",2025-08-14 11:04:02,2025-08-14 11:04:46,00:00:44
+37923,PickUp,waqas,Al Tayebah - Sharjah - United Arab Emirates,2025-08-14 11:05:20,2025-08-14 11:05:56,00:00:36
+30915,PickUp,ghaffar sr,Ajman - United Arab Emirates,2025-08-14 11:05:48,2025-08-14 11:08:40,00:02:52
+36389,Canter,hassan,"54,Dubai,United Arab Emirates",2025-08-14 11:06:12,2025-08-14 11:07:10,00:00:58
+36386,Canter,saqlain,Al Muraqqabat - Dubai - United Arab Emirates,2025-08-14 11:07:44,2025-08-14 11:08:13,00:00:29
+33254,Canter,sudhakar,Bu Tina - Sharjah - United Arab Emirates,2025-08-14 11:08:08,2025-08-14 11:08:48,00:00:40
+49570,Canter,amir,2 Al Nuaimia - Ajman - United Arab Emirates,2025-08-14 11:08:17,2025-08-14 11:10:32,00:02:15
+36389,Canter,hassan,"MAB Group,Al Nahda Street,Dubai,United Arab Emirates",2025-08-14 11:09:13,2025-08-14 11:10:57,00:01:44
+30915,PickUp,ghaffar sr,Ajman - United Arab Emirates,2025-08-14 11:09:59,2025-08-14 11:10:16,00:00:17
+36386,Canter,saqlain,Clock Tower Roundabout 2 - Dubai - United Arab Emirates,2025-08-14 11:10:15,2025-08-14 11:14:48,00:04:33
+30917,PickUp,Touqeer,Industrial Area 13 - Sharjah - United Arab Emirates,2025-08-14 11:11:13,2025-08-14 11:17:04,00:05:51
+30915,PickUp,ghaffar sr,Ajman - United Arab Emirates,2025-08-14 11:11:16,2025-08-14 11:12:16,00:01:00
+33254,Canter,sudhakar,Bu Tina - Sharjah - United Arab Emirates,2025-08-14 11:11:18,2025-08-14 11:14:15,00:02:57
+36346,PickUp,Majid,Al Gharb - Sharjah - United Arab Emirates,2025-08-14 11:11:31,2025-08-14 11:11:39,00:00:08
+49570,Canter,amir,2 Al Nuaimia - Ajman - United Arab Emirates,2025-08-14 11:11:58,2025-08-14 11:14:43,00:02:45
+36389,Canter,hassan,Dubai Folklore Theatre 1 - Dubai - United Arab Emirates,2025-08-14 11:12:17,2025-08-14 11:14:15,00:01:58
+36346,PickUp,Majid,Al Gharb - Sharjah - United Arab Emirates,2025-08-14 11:12:56,2025-08-14 11:21:51,00:08:55
+37923,PickUp,waqas,Al Tayebah - Sharjah - United Arab Emirates,2025-08-14 11:13:20,2025-08-14 11:13:29,00:00:09
+30941,PickUp,Ghaffar jr,Naif - Dubai - United Arab Emirates,2025-08-14 11:13:59,2025-08-14 11:14:22,00:00:23
+30915,PickUp,ghaffar sr,Al Bustan - Ajman - United Arab Emirates,2025-08-14 11:15:32,2025-08-14 11:22:32,00:07:00
+36389,Canter,hassan,"67,Hor Al Anz East,Deira,Dubai,United Arab Emirates",2025-08-14 11:16:45,2025-08-14 11:18:45,00:02:00
+30941,PickUp,Ghaffar jr,Naif - Dubai - United Arab Emirates,2025-08-14 11:17:20,2025-08-14 11:17:35,00:00:15
+36386,Canter,saqlain,Clock Tower Roundabout 2 - Dubai - United Arab Emirates,2025-08-14 11:17:33,2025-08-14 11:17:36,00:00:03
+30917,PickUp,Touqeer,Industrial Area 13 - Sharjah - United Arab Emirates,2025-08-14 11:18:04,2025-08-14 11:32:15,00:14:11
+30941,PickUp,Ghaffar jr,Naif - Dubai - United Arab Emirates,2025-08-14 11:19:02,2025-08-14 11:20:02,00:01:00
+49570,Canter,amir,"17,3 Al Nuaimia,Ajman,United Arab Emirates",2025-08-14 11:19:03,2025-08-14 11:27:56,00:08:53
+36389,Canter,hassan,"67,Hor Al Anz East,Deira,Dubai,United Arab Emirates",2025-08-14 11:19:45,2025-08-14 11:23:11,00:03:26
+36386,Canter,saqlain,Clock Tower Roundabout 2 - Dubai - United Arab Emirates,2025-08-14 11:19:57,2025-08-14 11:20:38,00:00:41
+33254,Canter,sudhakar,Al Riqa Suburb - Sharjah - United Arab Emirates,2025-08-14 11:21:07,2025-08-14 11:28:36,00:07:29
+30941,PickUp,Ghaffar jr,"36/1,Naif,Deira,Dubai,United Arab Emirates",2025-08-14 11:21:12,2025-08-14 11:23:38,00:02:26
+36386,Canter,saqlain,Clock Tower Roundabout 2 - Dubai - United Arab Emirates,2025-08-14 11:21:38,2025-08-14 11:21:48,00:00:10
+34259,PickUp,OFFICE,Muwailih Commercial - Sharjah - United Arab Emirates,2025-08-14 11:21:40,2025-08-14 11:28:18,00:06:38
+37923,PickUp,waqas,"Unnamed Road,Al Dhaid,Sharjah,United Arab Emirates",2025-08-14 11:22:36,2025-08-14 11:25:27,00:02:51
+36386,Canter,saqlain,Clock Tower Roundabout 2 - Dubai - United Arab Emirates,2025-08-14 11:22:52,2025-08-14 11:24:46,00:01:54
+36346,PickUp,Majid,Al Mareija - Sharjah - United Arab Emirates,2025-08-14 11:23:03,2025-08-14 11:23:16,00:00:13
+36346,PickUp,Majid,"Al Amal Building,Al Arouba Street,Um Altaraffa,Al Gharb,Sharjah,United Arab Emirates",2025-08-14 11:24:22,2025-08-14 11:33:02,00:08:40
+30941,PickUp,Ghaffar jr,Union Metro Station A 1 - Dubai - United Arab Emirates,2025-08-14 11:24:47,2025-08-14 11:25:36,00:00:49
+30915,PickUp,ghaffar sr,"10 Street, Bustan, Ajman, 15468, United Arab Emirates",2025-08-14 11:26:47,2025-08-14 11:34:07,00:07:20
+36389,Canter,hassan,Dubai Folklore Theatre 1 - Dubai - United Arab Emirates,2025-08-14 11:27:48,2025-08-14 11:29:30,00:01:42
+30941,PickUp,Ghaffar jr,Union Metro Station A 1 - Dubai - United Arab Emirates,2025-08-14 11:28:47,2025-08-14 11:32:02,00:03:15
+49570,Canter,amir,"17,3 Al Nuaimia,Ajman,United Arab Emirates",2025-08-14 11:28:56,2025-08-14 11:32:18,00:03:22
+33254,Canter,sudhakar,Al Riqa Suburb - Sharjah - United Arab Emirates,2025-08-14 11:29:36,2025-08-14 11:30:08,00:00:32
+36386,Canter,saqlain,Union Metro Station A 1 - Dubai - United Arab Emirates,2025-08-14 11:30:20,2025-08-14 11:30:46,00:00:26
+37923,PickUp,waqas,Al Dhaid - Sharjah - United Arab Emirates,2025-08-14 11:31:25,2025-08-14 11:36:25,00:05:00
+33254,Canter,sudhakar,AL Hazannah - Sharjah - United Arab Emirates,2025-08-14 11:31:47,2025-08-14 11:41:36,00:09:49
+36389,Canter,hassan,Hor Al Anz East - Dubai - United Arab Emirates,2025-08-14 11:32:14,2025-08-14 11:37:08,00:04:54
+34259,PickUp,OFFICE,"Maliha Road,Industrial Area 17,Industrial Area 15,Muwailih Commercial,Industrial Area,Sharjah,United Arab Emirates",2025-08-14 11:33:25,2025-08-14 11:35:06,00:01:41
+36386,Canter,saqlain,Deira - Dubai - United Arab Emirates,2025-08-14 11:33:46,2025-08-14 11:35:43,00:01:57
+30941,PickUp,Ghaffar jr,Al Muraqqabat - Dubai - United Arab Emirates,2025-08-14 11:34:03,2025-08-14 11:40:05,00:06:02
+36346,PickUp,Majid,Al Mareija - Sharjah - United Arab Emirates,2025-08-14 11:34:51,2025-08-14 11:40:39,00:05:48
+30917,PickUp,Touqeer,Muwailih Commercial - Sharjah - United Arab Emirates,2025-08-14 11:35:22,2025-08-14 11:50:13,00:14:51
+49570,Canter,amir,Ajman - United Arab Emirates,2025-08-14 11:36:00,2025-08-14 11:37:00,00:01:00
+37923,PickUp,waqas,Al Dhaid - Sharjah - United Arab Emirates,2025-08-14 11:37:25,2025-08-14 11:49:23,00:11:58
+30915,PickUp,ghaffar sr,Al Rashidiya 3 - Ajman - United Arab Emirates,2025-08-14 11:40:36,2025-08-14 11:41:44,00:01:08
+36386,Canter,saqlain,Al Murar - Dubai - United Arab Emirates,2025-08-14 11:40:54,2025-08-14 11:43:41,00:02:47
+36346,PickUp,Majid,Al Mareija - Sharjah - United Arab Emirates,2025-08-14 11:41:39,2025-08-14 11:42:39,00:01:00
+33254,Canter,sudhakar,"180,AL Hazannah,Al Riqa Suburb,Sharjah,United Arab Emirates",2025-08-14 11:42:36,2025-08-14 11:43:36,00:01:00
+30941,PickUp,Ghaffar jr,Maktoum Road 2 - Dubai - United Arab Emirates,2025-08-14 11:43:27,2025-08-14 11:44:57,00:01:30
+36346,PickUp,Majid,Al Mareija - Sharjah - United Arab Emirates,2025-08-14 11:43:44,2025-08-14 11:45:23,00:01:39
+30915,PickUp,ghaffar sr,Al Rashidiya 3 - Ajman - United Arab Emirates,2025-08-14 11:44:09,2025-08-14 11:48:34,00:04:25
+49570,Canter,amir,Al Bustan - Ajman - United Arab Emirates,2025-08-14 11:44:17,2025-08-14 11:44:43,00:00:26
+33254,Canter,sudhakar,"180,AL Hazannah,Al Riqa Suburb,Sharjah,United Arab Emirates",2025-08-14 11:45:31,2025-08-14 11:48:31,00:03:00
+49570,Canter,amir,Al Nakhil 1 - Ajman - United Arab Emirates,2025-08-14 11:45:43,2025-08-14 11:53:30,00:07:47
+30941,PickUp,Ghaffar jr,Al Rigga Metro Station A 2 - Dubai - United Arab Emirates,2025-08-14 11:47:35,2025-08-14 11:47:54,00:00:19
+34261,PickUp,aboobaker,Al Jerf 2 - Ajman - United Arab Emirates,2025-08-14 11:49:51,2025-08-14 11:57:20,00:07:29
+36346,PickUp,Majid,Al Musalla - Sharjah - United Arab Emirates,2025-08-14 11:50:09,2025-08-14 11:50:58,00:00:49
+36386,Canter,saqlain,Corniche Deira - Dubai - United Arab Emirates,2025-08-14 11:50:16,2025-08-14 11:57:22,00:07:06
+30915,PickUp,ghaffar sr,Ajman - United Arab Emirates,2025-08-14 11:50:31,2025-08-14 11:50:38,00:00:07
+33254,Canter,sudhakar,"180,AL Hazannah,Al Riqa Suburb,Sharjah,United Arab Emirates",2025-08-14 11:50:35,2025-08-14 11:55:21,00:04:46
+30941,PickUp,Ghaffar jr,Al Muraqqabat - Dubai - United Arab Emirates,2025-08-14 11:50:45,2025-08-14 11:51:29,00:00:44
+30941,PickUp,Ghaffar jr,Al Muraqqabat - Dubai - United Arab Emirates,2025-08-14 11:52:29,2025-08-14 11:54:47,00:02:18
+30917,PickUp,Touqeer,Muwailih Commercial - Sharjah - United Arab Emirates,2025-08-14 11:53:52,2025-08-14 11:56:43,00:02:51
+37923,PickUp,waqas,Al Dhaid - Sharjah - United Arab Emirates,2025-08-14 11:55:02,2025-08-14 11:56:14,00:01:12
+36389,Canter,hassan,Al Qusais Industrial Area 3 - Dubai - United Arab Emirates,2025-08-14 11:55:03,2025-08-14 12:04:42,00:09:39
+30941,PickUp,Ghaffar jr,Al Muraqqabat - Dubai - United Arab Emirates,2025-08-14 11:55:47,2025-08-14 11:56:05,00:00:18
+49570,Canter,amir,Sheikh Rashid Bin Humeed Street Ajman United Arab Emirates,2025-08-14 11:56:59,2025-08-14 12:07:15,00:10:16
+37923,PickUp,waqas,Al Dhaid - Sharjah - United Arab Emirates,2025-08-14 11:57:14,2025-08-14 11:59:09,00:01:55
+30941,PickUp,Ghaffar jr,Union Metro Station A 1 - Dubai - United Arab Emirates,2025-08-14 11:57:29,2025-08-14 11:57:57,00:00:28
+33254,Canter,sudhakar,"350,AL Hazannah,Al Riqa Suburb,Sharjah,United Arab Emirates",2025-08-14 11:58:20,2025-08-14 12:00:52,00:02:32
+36386,Canter,saqlain,Corniche Deira - Dubai - United Arab Emirates,2025-08-14 11:58:22,2025-08-14 12:02:47,00:04:25
+30941,PickUp,Ghaffar jr,Deira - Dubai - United Arab Emirates,2025-08-14 11:59:57,2025-08-14 12:00:56,00:00:59
+37923,PickUp,waqas,Al Dhaid - Sharjah - United Arab Emirates,2025-08-14 12:00:09,2025-08-14 12:04:09,00:04:00
+30915,PickUp,ghaffar sr,Ajman - United Arab Emirates,2025-08-14 12:00:49,2025-08-14 12:01:49,00:01:00
+30941,PickUp,Ghaffar jr,Al Muraqqabat - Dubai - United Arab Emirates,2025-08-14 12:03:51,2025-08-14 12:20:09,00:16:18
+33254,Canter,sudhakar,Al Riqa Suburb - Sharjah - United Arab Emirates,2025-08-14 12:04:02,2025-08-14 12:05:20,00:01:18
+36386,Canter,saqlain,Gold Souq Bus Station 3A - Dubai - United Arab Emirates,2025-08-14 12:04:47,2025-08-14 12:05:06,00:00:19
+37923,PickUp,waqas,Al Dhaid - Sharjah - United Arab Emirates,2025-08-14 12:05:13,2025-08-14 12:08:06,00:02:53
+33254,Canter,sudhakar,Al Riqa Suburb - Sharjah - United Arab Emirates,2025-08-14 12:06:20,2025-08-14 12:07:20,00:01:00
+36389,Canter,hassan,Al Qusais Industrial Area 3 - Dubai - United Arab Emirates,2025-08-14 12:06:56,2025-08-14 12:12:36,00:05:40
+34261,PickUp,aboobaker,Ajman - United Arab Emirates,2025-08-14 12:07:42,2025-08-14 12:07:53,00:00:11
+49570,Canter,amir,Ajman - United Arab Emirates,2025-08-14 12:08:15,2025-08-14 12:08:58,00:00:43
+33254,Canter,sudhakar,Al Qadisiya - Sharjah - United Arab Emirates,2025-08-14 12:08:20,2025-08-14 12:13:20,00:05:00
+30915,PickUp,ghaffar sr,Ajman - United Arab Emirates,2025-08-14 12:09:46,2025-08-14 12:10:46,00:01:00
+49570,Canter,amir,Al Nakhil - Ajman - United Arab Emirates,2025-08-14 12:09:58,2025-08-14 12:13:08,00:03:10
+37923,PickUp,waqas,Al Dhaid - Sharjah - United Arab Emirates,2025-08-14 12:10:36,2025-08-14 12:16:16,00:05:40
+36346,PickUp,Majid,Al Ghuwair - Sharjah - United Arab Emirates,2025-08-14 12:11:54,2025-08-14 12:12:06,00:00:12
+34261,PickUp,aboobaker,Al Jerf Industrial 1 - Ajman - United Arab Emirates,2025-08-14 12:11:54,2025-08-14 12:22:21,00:10:27
+36386,Canter,saqlain,Bur Dubai - Dubai - United Arab Emirates,2025-08-14 12:12:30,2025-08-14 12:12:58,00:00:28
+30915,PickUp,ghaffar sr,3 Al Nuaimia - Ajman - United Arab Emirates,2025-08-14 12:12:57,2025-08-14 12:19:32,00:06:35
+36346,PickUp,Majid,Al Ghuwair - Sharjah - United Arab Emirates,2025-08-14 12:13:06,2025-08-14 12:17:48,00:04:42
+36389,Canter,hassan,Al Nahda - Dubai - United Arab Emirates,2025-08-14 12:14:11,2025-08-14 12:16:10,00:01:59
+36389,Canter,hassan,Al Nahda - Dubai - United Arab Emirates,2025-08-14 12:17:10,2025-08-14 12:19:07,00:01:57
+36386,Canter,saqlain,Al Souq Al Kabeer - Dubai - United Arab Emirates,2025-08-14 12:17:44,2025-08-14 12:19:44,00:02:00
+49570,Canter,amir,Ajman - United Arab Emirates,2025-08-14 12:18:20,2025-08-14 12:19:20,00:01:00
+36386,Canter,saqlain,Raffa 2 - Dubai - United Arab Emirates,2025-08-14 12:20:44,2025-08-14 12:21:44,00:01:00
+36389,Canter,hassan,Al Qusais Industrial Area - Dubai - United Arab Emirates,2025-08-14 12:20:58,2025-08-14 12:23:57,00:02:59
+36346,PickUp,Majid,"117,Sharjah,United Arab Emirates",2025-08-14 12:22:06,2025-08-14 12:28:31,00:06:25
+30941,PickUp,Ghaffar jr,"28,Muteena,Deira,Dubai,United Arab Emirates,Mateena, Emirates Cooperative Society 1",2025-08-14 12:22:15,2025-08-14 12:24:15,00:02:00
+33254,Canter,sudhakar,Al Sabkha - Sharjah - United Arab Emirates,2025-08-14 12:22:17,2025-08-14 12:26:11,00:03:54
+36386,Canter,saqlain,Raffa 2 - Dubai - United Arab Emirates,2025-08-14 12:22:44,2025-08-14 12:23:16,00:00:32
+49570,Canter,amir,Al Rashidiya 1 - Ajman - United Arab Emirates,2025-08-14 12:23:59,2025-08-14 12:28:01,00:04:02
+30915,PickUp,ghaffar sr,2 Al Nuaimia - Ajman - United Arab Emirates,2025-08-14 12:26:18,2025-08-14 12:26:28,00:00:10
+30941,PickUp,Ghaffar jr,"Deira,Fish Roundabout 2 - Dubai - United Arab Emirates",2025-08-14 12:26:19,2025-08-14 12:28:59,00:02:40
+36389,Canter,hassan,Muhaisnah - Dubai - United Arab Emirates,2025-08-14 12:26:24,2025-08-14 12:27:08,00:00:44
+36386,Canter,saqlain,Al Souq Al Kabeer - Dubai - United Arab Emirates,2025-08-14 12:27:13,2025-08-14 12:38:43,00:11:30
+33254,Canter,sudhakar,"262,Sharjah,United Arab Emirates",2025-08-14 12:28:11,2025-08-14 12:31:19,00:03:08
+30915,PickUp,ghaffar sr,2 Al Nuaimia - Ajman - United Arab Emirates,2025-08-14 12:28:18,2025-08-14 12:28:37,00:00:19
+36389,Canter,hassan,Al Qusais Industrial Area 5 - Dubai - United Arab Emirates,2025-08-14 12:28:42,2025-08-14 12:32:38,00:03:56
+30941,PickUp,Ghaffar jr,Al Muraqqabat - Dubai - United Arab Emirates,2025-08-14 12:29:59,2025-08-14 12:33:11,00:03:12
+36346,PickUp,Majid,"117,Sharjah,United Arab Emirates",2025-08-14 12:30:31,2025-08-14 12:43:44,00:13:13
+30917,PickUp,Touqeer,Muwailih Commercial - Sharjah - United Arab Emirates,2025-08-14 12:31:02,2025-08-14 12:35:45,00:04:43
+49570,Canter,amir,Al Rashidiya 1 - Ajman - United Arab Emirates,2025-08-14 12:31:04,2025-08-14 12:32:04,00:01:00
+34261,PickUp,aboobaker,"Jiddah Street,Sharjah,United Arab Emirates",2025-08-14 12:31:35,2025-08-14 12:41:13,00:09:38
+33254,Canter,sudhakar,"Sheikh Majed Bin Saqr Al Qasimi Street,Al Ghafia,Sharjah,United Arab Emirates",2025-08-14 12:34:23,2025-08-14 12:42:23,00:08:00
+30941,PickUp,Ghaffar jr,Al Muraqqabat - Dubai - United Arab Emirates,2025-08-14 12:35:19,2025-08-14 12:39:03,00:03:44
+37923,PickUp,waqas,Al Dhaid - Sharjah - United Arab Emirates,2025-08-14 12:35:25,2025-08-14 12:39:23,00:03:58
+49570,Canter,amir,Ajman - United Arab Emirates,2025-08-14 12:35:28,2025-08-14 12:36:44,00:01:16
+30915,PickUp,ghaffar sr,2 Al Nuaimia - Ajman - United Arab Emirates,2025-08-14 12:36:32,2025-08-14 12:37:02,00:00:30
+49570,Canter,amir,2 Al Nuaimia - Ajman - United Arab Emirates,2025-08-14 12:37:44,2025-08-14 12:38:30,00:00:46
+30915,PickUp,ghaffar sr,2 Al Nuaimia - Ajman - United Arab Emirates,2025-08-14 12:39:55,2025-08-14 12:40:03,00:00:08
+49570,Canter,amir,"87,Al Nuaimia 1,Ajman,United Arab Emirates",2025-08-14 12:40:07,2025-08-14 12:45:01,00:04:54
+34259,PickUp,OFFICE,Al Ittihad Rd - Sharjah - United Arab Emirates,2025-08-14 12:40:14,2025-08-14 12:46:28,00:06:14
+30917,PickUp,Touqeer,Muwailih Commercial - Sharjah - United Arab Emirates,2025-08-14 12:40:46,2025-08-14 12:46:47,00:06:01
+36389,Canter,hassan,Muhaisnah 4 - Dubai - United Arab Emirates,2025-08-14 12:41:12,2025-08-14 12:42:23,00:01:11
+30915,PickUp,ghaffar sr,2 Al Nuaimia - Ajman - United Arab Emirates,2025-08-14 12:41:42,2025-08-14 12:41:53,00:00:11
+30941,PickUp,Ghaffar jr,"Muraqqabat, Police Station 1 - Dubai - United Arab Emirates",2025-08-14 12:42:06,2025-08-14 12:42:23,00:00:17
+30941,PickUp,Ghaffar jr,Al Khabaisi - Dubai - United Arab Emirates,2025-08-14 12:44:23,2025-08-14 12:45:23,00:01:00
+34261,PickUp,aboobaker,"Jiddah Street,Sharjah,United Arab Emirates",2025-08-14 12:45:14,2025-08-14 12:49:26,00:04:12

@@ -1666,8 +1666,6 @@ class VehicleDataWrapper:
         self.base_path = base_path
         self.config_path = config_path
         self.data_sources = {
-            "data/idlereport": {"current": None, "history": None},
-            "data/exidlereport": {"current": None, "history": None},
             "data/travelreport": {"current": None, "history": None},
             "data/geofence": {"current": None, "history": None},
             "data/driverperformance": {"current": None, "history": None}
@@ -1758,8 +1756,6 @@ class VehicleDataWrapper:
     def _parse_datetime_columns(self, df: pd.DataFrame, source: str) -> pd.DataFrame:
         datetime_columns = {
             "data/travelreport": ["DateTime"],
-            "data/idlereport": ["Idle From", "Idle Till"],
-            "data/exidlereport": ["Idle From", "Idle Till"],
             "data/geofence": ["In Time", "Out Time"],
             "data/driverperformance": ["Login Time", "Logout Time"]
         }
@@ -1820,27 +1816,71 @@ class VehicleDataWrapper:
         
         return self._customer_info
     
+    def get_stop_points_data(self, start_date: datetime, end_date: datetime, 
+                            vehicle_nos: Optional[List[str]] = None) -> pd.DataFrame:
+        all_stop_points = []
+        
+        for time_type in ["current", "history"]:
+            csv_path = os.path.join(self.base_path, "data/travelreport", f"{time_type}.csv")
+            
+            if vehicle_nos:
+                vehicle_ids = [str(v) for v in vehicle_nos]
+            else:
+                vehicle_ids = []
+                for df_type in ["current", "history"]:
+                    df = self.data_sources.get("data/travelreport", {}).get(df_type)
+                    if df is not None and 'Vehicle No' in df.columns:
+                        unique_vehicles = df['Vehicle No'].astype(str).str.strip().unique()
+                        vehicle_ids.extend(unique_vehicles)
+                vehicle_ids = list(set(vehicle_ids))
+            
+            if vehicle_ids:
+                stop_points_df = extract_stop_points(
+                    csv_path=csv_path,
+                    vehicle_ids=vehicle_ids,
+                    t_start=start_date.strftime('%Y-%m-%d %H:%M:%S'),
+                    t_end=end_date.strftime('%Y-%m-%d %H:%M:%S')
+                )
+                
+                if not stop_points_df.empty:
+                    stop_points_df['DataSource'] = f"travelreport_{time_type}"
+                    all_stop_points.append(stop_points_df)
+        
+        if all_stop_points:
+            combined_stop_points = pd.concat(all_stop_points, ignore_index=True)
+            combined_stop_points = combined_stop_points.sort_values(['Vehicle No', 'StartTime'])
+            print(f"Combined stop points: {len(combined_stop_points)} records")
+            return combined_stop_points
+        else:
+            return pd.DataFrame()
+    
     def get_filtered_data(self, start_date: datetime, end_date: datetime, 
                          vehicle_no: Optional[str] = None, 
                          reports: Optional[List[str]] = None) -> Dict:
         self.reload_data()
         filtered_data = {}
         
+        if reports and any(report in ["idlereport", "exidlereport", "travelreport"] for report in reports):
+            if vehicle_no:
+                vehicle_list = [vehicle_no]
+            else:
+                vehicle_list = None
+            
+            stop_points_df = self.get_stop_points_data(start_date, end_date, vehicle_list)
+            if not stop_points_df.empty:
+                filtered_data["stop_points"] = stop_points_df
+        
         if reports:
             report_mapping = {
-                "idlereport": "data/idlereport",
-                "exidlereport": "data/exidlereport", 
-                "travelreport": "data/travelreport",
                 "geofence": "data/geofence",
                 "driverperformance": "data/driverperformance"
             }
-            sources_to_process = [report_mapping.get(r, r) for r in reports if report_mapping.get(r, r) in self.data_sources]
+            sources_to_process = [report_mapping.get(r) for r in reports if report_mapping.get(r) in self.data_sources]
         else:
-            sources_to_process = list(self.data_sources.keys())
+            sources_to_process = [s for s in self.data_sources.keys() if s != "data/travelreport"]
         
         for source in sources_to_process:
             if source not in self.data_sources:
-                print(f"Unknown source: {source}")
                 continue
                 
             for time_type in ["current", "history"]:
@@ -1849,53 +1889,27 @@ class VehicleDataWrapper:
                     continue
                 
                 datetime_col_map = {
-                    "data/travelreport": "DateTime",
-                    "data/idlereport": "Idle From",
-                    "data/exidlereport": "Idle From",
                     "data/geofence": "In Time",
                     "data/driverperformance": "Login Time"
                 }
                 
                 datetime_col = datetime_col_map.get(source)
                 if not datetime_col or datetime_col not in df.columns:
-                    print(f"DEBUG: {source} - Datetime column '{datetime_col}' not found in columns: {list(df.columns)}")
                     continue
                 
-                # Additional datetime conversion just in case
                 if df[datetime_col].dtype == 'object':
-                    print(f"DEBUG: {source} - Converting {datetime_col} from object to datetime")
                     df[datetime_col] = pd.to_datetime(df[datetime_col], errors='coerce')
-                
-                print(f"DEBUG: {source} - Using datetime column: {datetime_col} (dtype: {df[datetime_col].dtype})")
                 
                 try:
                     mask = (df[datetime_col] >= start_date) & (df[datetime_col] <= end_date)
                     filtered_df = df[mask].copy()
                     
-                    print(f"DEBUG: {source} - Before date filter: {len(df)} records, After: {len(filtered_df)} records")
-                    
-                    # Ensure vehicle IDs are treated as strings
                     if vehicle_no:
                         vehicle_col = self._get_vehicle_column(filtered_df)
                         if vehicle_col:
-                            before_vehicle_filter = len(filtered_df)
-                            # Get available vehicles before filtering
-                            available_vehicles = df[vehicle_col].astype(str).str.strip().unique() if len(df) > 0 else []
-                            # Convert both sides to strings for comparison
                             filtered_df = filtered_df[
                                 filtered_df[vehicle_col].astype(str).str.strip() == str(vehicle_no).strip()
                             ]
-                            print(f"DEBUG: {source} - Vehicle filter ({vehicle_col}={vehicle_no}): {before_vehicle_filter} -> {len(filtered_df)} records")
-                            if len(filtered_df) == 0 and before_vehicle_filter > 0:
-                                print(f"DEBUG: {source} - Available vehicles: {available_vehicles}")
-                        else:
-                            print(f"DEBUG: {source} - No vehicle column found in: {list(filtered_df.columns)}")
-                    
-                    if source == "data/travelreport":
-                        if 'Status' in filtered_df.columns:
-                            before_status_filter = len(filtered_df)
-                            filtered_df = filtered_df[filtered_df['Status'] != 'Moving']
-                            print(f"DEBUG: {source} - Status filter (!=Moving): {before_status_filter} -> {len(filtered_df)} records")
                     
                     if not filtered_df.empty:
                         key = f"{source}_{time_type}"
@@ -1923,24 +1937,31 @@ class VehicleDataWrapper:
 
         all_data = {}
         
+        if reports and any(report in ["idlereport", "exidlereport", "travelreport"] for report in reports):
+            stop_points_df = self.get_stop_points_data(start_date, end_date, vehicle_nos)
+            if not stop_points_df.empty:
+                all_data["stop_points"] = stop_points_df
+        
         for vehicle_no in vehicle_nos:
             vehicle_data = self.get_filtered_data(start_date, end_date, vehicle_no, reports)
             
             for key, df in vehicle_data.items():
+                if key == "stop_points":
+                    continue
                 if key not in all_data:
                     all_data[key] = []
                 all_data[key].append(df)
 
         combined_data = {}
         for key, df_list in all_data.items():
+            if key == "stop_points":
+                combined_data[key] = all_data[key]
+                continue
             if df_list:
                 try:
                     combined_df = pd.concat(df_list, ignore_index=True)
                     source = key.split('_')[0]
                     datetime_col_map = {
-                        "data/travelreport": "DateTime",
-                        "data/idlereport": "Idle From",
-                        "data/exidlereport": "Idle From",
                         "data/geofence": "In Time",
                         "data/driverperformance": "Login Time"
                     }
@@ -1979,8 +2000,6 @@ class VehicleDataWrapper:
     def _get_date_range(self, df: pd.DataFrame, source: str) -> Optional[Dict]:
         datetime_col_map = {
             "data/travelreport": "DateTime",
-            "data/idlereport": "Idle From",
-            "data/exidlereport": "Idle From",
             "data/geofence": "In Time",
             "data/driverperformance": "Login Time"
         }
@@ -2073,7 +2092,6 @@ class VehicleRAGSystem:
         current_time = datetime.now()
         context = f"CURRENT TIME: {current_time.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
         
-        # Helper function to safely get string values from pandas rows
         def safe_get(row, column, default='N/A'):
             value = row.get(column, default)
             if pd.isna(value):
@@ -2107,47 +2125,38 @@ class VehicleRAGSystem:
         
         total_records = 0
         
+        if "stop_points" in filtered_data:
+            stop_points_df = filtered_data["stop_points"]
+            available_records = min(len(stop_points_df), max_records - total_records)
+            
+            context += f"=== STOP POINTS ANALYSIS - {available_records} records ===\n"
+            
+            for idx, row in stop_points_df.head(available_records).iterrows():
+                vehicle_num = safe_get(row, 'Vehicle No')
+                duration = safe_get(row, 'DurationMinutes')
+                address = safe_get(row, 'Address')[:50]
+                start_time = safe_get(row, 'StartTime')
+                end_time = safe_get(row, 'EndTime')
+                data_source = safe_get(row, 'DataSource')
+                
+                context += f"V{vehicle_num} stopped {duration}min at {address} | {start_time} to {end_time} | Source: {data_source}\n"
+            
+            context += "\n"
+            total_records += available_records
+        
         for source_key, df in filtered_data.items():
-            if total_records >= max_records:
-                break
+            if source_key == "stop_points" or total_records >= max_records:
+                continue
                 
             source, time_type = source_key.split('_')
             available_records = min(len(df), max_records - total_records)
             
-            # Convert back to display format
             display_source = source.replace('data/', '')
             context += f"=== {display_source.upper()} ({time_type}) - {available_records} records ===\n"
             
             df_sample = df.head(available_records)
             
-            if source == "data/travelreport":
-                for idx, row in df_sample.iterrows():
-                    vehicle_num = safe_get(row, 'Vehicle No')
-                    alias = load_vehicle_aliases().get(str(vehicle_num), str(vehicle_num))
-                    status = safe_get(row, 'Status')
-                    address = safe_get(row, 'Address')[:50]
-                    datetime_val = safe_get(row, 'DateTime')
-                    context += f"V{vehicle_num}({alias}) {status} at {address} | {datetime_val}\n"
-            
-            elif source == "data/idlereport":
-                for idx, row in df_sample.iterrows():
-                    vehicle_num = safe_get(row, 'Vehicle Number')
-                    alias = load_vehicle_aliases().get(str(vehicle_num), str(vehicle_num))
-                    location = safe_get(row, 'Location')[:30]
-                    idle_from = safe_get(row, 'Idle From')
-                    idle_till = safe_get(row, 'Idle Till')
-                    duration = safe_get(row, 'Duration')
-                    context += f"V{vehicle_num}({alias}) idle at {location} | {idle_from} to {idle_till} | {duration}\n"
-            
-            elif source == "data/exidlereport":
-                for idx, row in df_sample.iterrows():
-                    vehicle_num = safe_get(row, 'Vehicle Number')
-                    alias = load_vehicle_aliases().get(str(vehicle_num), str(vehicle_num))
-                    location = safe_get(row, 'Location')[:30]
-                    duration = safe_get(row, 'Duration')
-                    context += f"V{vehicle_num}({alias}) excessive idle at {location} | {duration}\n"
-            
-            elif source == "data/driverperformance":
+            if source == "data/driverperformance":
                 for idx, row in df_sample.iterrows():
                     driver = safe_get(row, 'Driver')
                     km = safe_get(row, 'KM')
@@ -2159,11 +2168,10 @@ class VehicleRAGSystem:
             elif source == "data/geofence":
                 for idx, row in df_sample.iterrows():
                     vehicle_num = safe_get(row, 'Vehicle No')
-                    alias = load_vehicle_aliases().get(str(vehicle_num), str(vehicle_num))
                     geofence = safe_get(row, 'Geofence')
                     in_time = safe_get(row, 'In Time')
                     out_time = safe_get(row, 'Out Time')
-                    context += f"V{vehicle_num}({alias}) {geofence} | In:{in_time} Out:{out_time}\n"
+                    context += f"V{vehicle_num} {geofence} | In:{in_time} Out:{out_time}\n"
             
             context += "\n"
             total_records += available_records
@@ -2209,7 +2217,7 @@ class VehicleRAGSystem:
         2. The date range must be within **one calendar day only**.  
         3. If the query specifies no vehicle, assume all vehicles `"ids"` and make a full list [vehicle_id1 .. vehicle_idn].  
         4. Use today's date unless if any time not mentioned, basically current time, else figure out the desired date. 
-        5. The `"reports"` field must only contain relevant sources from: ["idlereport", "exidlereport", "travelreport", "driverperformance", "geofence"]  
+        5. The `"reports"` field must only contain relevant sources from: ["travelreport", "idlereport", "exidlereport", "driverperformance", "geofence"]  
         6. Set `"include_alerts": true` for queries about alerts, violations, warnings, or notifications
         7. Set `"include_customers": true` for queries about deliveries, customer visits, or assignments
         8. The output must always be valid **JSON** (use double quotes).  
@@ -2235,7 +2243,7 @@ class VehicleRAGSystem:
         "start": "{(current_time - timedelta(days=1)).strftime('%Y-%m-%d')} 08:00:00",  
         "end": "{(current_time - timedelta(days=1)).strftime('%Y-%m-%d')} 22:00:00",  
         "ids": ["123"],  
-        "reports": ["travelreport", "idlereport"],
+        "reports": ["travelreport"],
         "include_alerts": false,
         "include_customers": true  
         }}}}
@@ -2246,7 +2254,7 @@ class VehicleRAGSystem:
         "start": "{current_time.strftime('%Y-%m-%d')} 08:00:00",  
         "end": "{current_time.strftime('%Y-%m-%d')} 22:00:00",  
         "ids": [123,456,... all vehicle id's],  
-        "reports": ["idlereport", "travelreport"],
+        "reports": ["travelreport"],
         "include_alerts": true,
         "include_customers": true  
         }}}}
@@ -2336,10 +2344,11 @@ class VehicleRAGSystem:
                 analysis_prompt = f"""Based on the following data, answer the user's question concisely. Make business assumptions about deliveries and driver activities.
 
                 BUSINESS CONTEXT:
-                - When drivers stop/idle,under 20 min they are likely making deliveries to customers else be suspicious
-                - Idle reports can show both delivery stops and for considering time wastage threshold is 20 min
+                - When drivers stop/idle, under 20 min they are likely making deliveries to customers else be suspicious
+                - Stop points analysis shows consolidated delivery locations with duration and timing
                 - Alert system monitors driver performance and route compliance
                 - Each vehicle has assigned customers for specific weekdays
+                - Stop points data is extracted from travelreport files using GPS clustering
                 
                 {context_from_history}
 
@@ -2348,11 +2357,13 @@ class VehicleRAGSystem:
 
                 User Question: {question}
 
+                When referencing stop points data, cite the specific DataSource (travelreport_current or travelreport_history) and mention the duration and location details. For other data, reference the specific report type and time period.
+
                 Provide a concise business-focused response covering:
-                1. Driver delivery activities and customer visits
+                1. Driver delivery activities and customer visits based on stop points
                 2. Alert notifications received (if relevant)
                 3. Performance insights and route compliance
-                4. Specific patterns or delivery efficiency
+                4. Specific patterns or delivery efficiency with reference to data sources
 
                 Answer:"""
                         

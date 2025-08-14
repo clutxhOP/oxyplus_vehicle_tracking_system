@@ -128,4 +128,3 @@ def preprocess_everything(days: int = 70):
     print("Analysis updated now you can make fresh customer points by deleting old ones from settings.")
     final.to_csv("analysis/customerpoints/idlepoints.csv", index=False)
     return
-preprocess_everything()

@@ -68,11 +68,11 @@ def stop_whatsapp_job():
 
 def whatsapp_restart_job():
     current_time = datetime.now().time()
-    start_time = dtime(8, 0)
-    end_time = dtime(0, 0)
+    start_time = dtime(9, 0)
+    end_time = dtime(18, 0)
 
-    if not (start_time <= current_time <= end_time):
-        print("DEBUG: Skipping WhatsApp restart due to quiet hours")
+    if current_time < start_time or current_time > end_time:
+        print("DEBUG: Skipping WhatsApp restart due to outside business hours")
         return
 
     print("DEBUG: Restarting WhatsApp script job")
@@ -887,14 +887,6 @@ def preprocessing_job():
     print(f"DEBUG: Preprocessing {'completed' if success else 'failed'}")
 
 def whatsapp_clean_job():
-    current_time = datetime.now().time()
-    start_time = dtime(8, 0)
-    end_time = dtime(23, 59)
-
-    if not (start_time <= current_time <= end_time):
-        print("DEBUG: Skipping WhatsApp clean job due to quiet hours")
-        return
-
     print("DEBUG: Running WhatsApp clean job")
     
     try:
@@ -913,7 +905,7 @@ def alert_monitoring_job():
     quiet_start = dtime(21, 0)
     quiet_end = dtime(9, 0)
 
-    if quiet_start <= current_time < quiet_end:
+    if quiet_start <= current_time or current_time < quiet_end:
         print("DEBUG: Skipping alert monitoring due to quiet hours [9 PM - 9 AM]")
         return
 
