@@ -5,13 +5,9 @@ import json
 import os
 import re
 import csv
-import asyncio
-import aiohttp
 import threading
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from queue import Queue
 import random
 
 def reverse_geocode(latitude: float, longitude: float) -> str:
@@ -44,34 +40,23 @@ def load_settings():
 
 def is_business_hours():
     now = datetime.now()
-    return 9 <= now.hour < 18
+    return 6 <= now.hour < 21
 
 class EnhancedWhatsAppCollector:
     def __init__(self):
         self.contact_status_file = "contact_status.csv"
         self.extracted_data_file = "extracted_data.csv"
         self.processed_messages_file = "processed_messages.json"
-        self.rate_limit_file = "rate_limits.json"
-        self.outreach_state_file = "outreach_state.json"
         self.contacted_today_file = "contacted_today.json"
-        self.follow_up_file = "follow_up_tracking.json"
 
-        self.message_queue = Queue()
-        self.processing_threads = []
         self.is_running = False
-        self.max_workers = 3
-
-        self.last_message_time = self.load_rate_limits()
-        self.min_reply_interval = 60
-        self.reply_delay_range = (60, 300)
-
-        self.outreach_delay_range = (300, 2400)
         
-        self.last_global_message = 0
-        self.outreach_state = self.load_outreach_state()
+        # Fixed timing intervals as requested
+        self.outreach_delay_range = (300, 1200)  # 5-20 minutes between outreach messages
+        self.reply_delay_range = (60, 180)       # 1-3 minutes for replies
+        
+        self.last_message_time = {}
         self.contacted_today = self.load_contacted_today()
-        self.follow_up_tracking = self.load_follow_up_tracking()
-        
         self.processed_messages = self.load_processed_messages()
         self._initialize_csv_files()
     
@@ -100,143 +85,24 @@ class EnhancedWhatsAppCollector:
         except Exception as e:
             print(f"Error saving contacted today: {e}")
     
-    def load_follow_up_tracking(self) -> dict:
-        try:
-            if os.path.exists(self.follow_up_file):
-                with open(self.follow_up_file, 'r') as f:
-                    return json.load(f)
-            return {}
-        except Exception as e:
-            print(f"Error loading follow up tracking: {e}")
-            return {}
-    
-    def save_follow_up_tracking(self):
-        try:
-            with open(self.follow_up_file, 'w') as f:
-                json.dump(self.follow_up_tracking, f)
-        except Exception as e:
-            print(f"Error saving follow up tracking: {e}")
-    
-    def load_outreach_state(self) -> dict:
-        try:
-            if os.path.exists(self.outreach_state_file):
-                with open(self.outreach_state_file, 'r') as f:
-                    data = json.load(f)
-                    last_date = data.get('date', '')
-                    today = datetime.now().strftime('%Y-%m-%d')
-                    if last_date != today:
-                        return {
-                            'date': today,
-                            'sent_count': 0,
-                            'last_sent_time': 0,
-                            'current_batch_index': 0
-                        }
-                    return data
-            return {
-                'date': datetime.now().strftime('%Y-%m-%d'),
-                'sent_count': 0,
-                'last_sent_time': 0,
-                'current_batch_index': 0
-            }
-        except Exception as e:
-            print(f"Error loading outreach state: {e}")
-            return {
-                'date': datetime.now().strftime('%Y-%m-%d'),
-                'sent_count': 0,
-                'last_sent_time': 0,
-                'current_batch_index': 0
-            }
-    
-    def save_outreach_state(self):
-        try:
-            with open(self.outreach_state_file, 'w') as f:
-                json.dump(self.outreach_state, f)
-        except Exception as e:
-            print(f"Error saving outreach state: {e}")
-    
-    def get_outreach_delay(self) -> float:
-        return random.randint(self.outreach_delay_range[0], self.outreach_delay_range[1])
-    
-    def get_reply_delay(self) -> float:
-        return random.randint(self.reply_delay_range[0], self.reply_delay_range[1])
-    
-    def can_send_outreach_message(self) -> bool:
-        if not is_business_hours():
-            return False
-            
-        current_time = time.time()
-        time_since_last = current_time - self.outreach_state.get('last_sent_time', 0)
-        required_delay = self.get_outreach_delay()
-        
-        return time_since_last >= required_delay
-    
-    def get_openai_client(self):
-        openai_key = load_settings()['openai_api_key']
-        if openai_key:
-            import openai
-            return openai.OpenAI(api_key=openai_key)
-        return None
-    
-    def get_whatsapp_url(self):
-        return load_settings()['whatsapp_server_url'].rstrip('/')
-    
-    def load_rate_limits(self) -> dict:
-        try:
-            if os.path.exists(self.rate_limit_file):
-                with open(self.rate_limit_file, 'r') as f:
-                    data = json.load(f)
-                    current_time = time.time()
-                    return {
-                        phone: timestamp 
-                        for phone, timestamp in data.items() 
-                        if current_time - timestamp < 3600
-                    }
-            return {}
-        except Exception as e:
-            print(f"Error loading rate limits: {e}")
-            return {}
-    
-    def save_rate_limits(self):
-        try:
-            with open(self.rate_limit_file, 'w') as f:
-                json.dump(self.last_message_time, f)
-        except Exception as e:
-            print(f"Error saving rate limits: {e}")
-    
     def load_processed_messages(self) -> set:
         try:
             if os.path.exists(self.processed_messages_file):
                 with open(self.processed_messages_file, 'r') as f:
                     data = json.load(f)
-                    processed_ids = set(data.get('processed_ids', []))
-                    if 'timestamps' in data:
-                        current_time = time.time()
-                        valid_ids = set()
-                        for msg_id in processed_ids:
-                            timestamp = data['timestamps'].get(msg_id, 0)
-                            if current_time - timestamp < 86400:
-                                valid_ids.add(msg_id)
-                        return valid_ids
-                    return processed_ids
+                    return set(data.get('processed_ids', []))
             return set()
         except:
             return set()
     
     def save_processed_messages(self):
         try:
-            current_time = time.time()
             data = {
                 'processed_ids': list(self.processed_messages),
-                'timestamps': {msg_id: current_time for msg_id in self.processed_messages},
-                'last_updated': current_time
+                'last_updated': time.time()
             }
             with open(self.processed_messages_file, 'w') as f:
                 json.dump(data, f)
-
-            self.save_rate_limits()
-            self.save_outreach_state()
-            self.save_contacted_today()
-            self.save_follow_up_tracking()
         except Exception as e:
             print(f"Error saving processed messages: {e}")
     
@@ -308,118 +174,54 @@ class EnhancedWhatsAppCollector:
             print(f"Error checking WhatsApp status: {e}")
             return False
     
-    def can_send_reply(self, phone_number: str) -> bool:
-        current_time = time.time()
-
-        if phone_number in self.last_message_time:
-            time_since_last = current_time - self.last_message_time[phone_number]
-            if time_since_last < self.min_reply_interval:
-                return False
-        
-        return True
+    def get_openai_client(self):
+        openai_key = load_settings()['openai_api_key']
+        if openai_key:
+            import openai
+            return openai.OpenAI(api_key=openai_key)
+        return None
     
-    def generate_ai_message(self, message_type: str, customer_name: str = "", user_message: str = "", context: str = "") -> str:
+    def get_whatsapp_url(self):
+        return load_settings()['whatsapp_server_url'].rstrip('/')
+    
+    def generate_ai_message(self, message_type: str, customer_name: str = "", user_message: str = "") -> str:
         openai_client = self.get_openai_client()
-        max_retries = 3
-        retry_count = 0
         
-        while retry_count < max_retries:
-            try:
-                if not openai_client:
-                    openai_client = self.get_openai_client()
-                    if not openai_client:
-                        return "Sorry, I'm having technical difficulties. Please try again later."
-                
-                if message_type == "initial_outreach":
-                    prompt = """Generate a brief, friendly WhatsApp message (max 80 words) for OxyPlus Water Delivery introducing our premium water service. Ask for their name and mention we'll need location for delivery. Sound natural and professional, not robotic. Don't use bullet points or emojis."""
-                
-                elif message_type == "location_request":
-                    prompt = f"""Generate a brief message (max 60 words) asking {customer_name} to share their location using WhatsApp's location feature for OxyPlus water delivery. Be friendly and explain it's needed for delivery. Don't use emojis or bullet points."""
-                
-                elif message_type == "completion":
-                    prompt = f"""Generate a brief thank you message (max 50 words) for {customer_name} confirming we received their location and will contact them soon for OxyPlus water delivery. Be appreciative and professional."""
-                
-                elif message_type == "follow_up":
-                    prompt = f"""Generate a brief follow-up message (max 60 words) for OxyPlus water delivery. Ask {customer_name if customer_name else 'the customer'} if they're still interested in premium water service and mention our toll-free number 6005-69699 for questions."""
-                
-                elif message_type == "redirect_to_support":
-                    prompt = f"""Generate a brief message (max 50 words) politely redirecting the customer to call our toll-free number 6005-69699 for detailed questions about OxyPlus water service. Be helpful but direct them to customer service."""
-                
-                else:
-                    context_info = f"Customer name: {customer_name}" if customer_name else "Customer name not collected yet"
-                    prompt = f"""You are customer service for OxyPlus Water Delivery (oxypluswater.com) in UAE.
-
-Customer message: "{user_message}"
-Context: {context_info}
-
-Generate a helpful response (max 70 words) that:
-1. Addresses their concern briefly
-2. If they ask detailed questions, redirect to toll-free 6005-69699
-3. If name not collected, ask for it
-4. If location not shared, ask for it (name first, then location)
-5. Stay professional and brief
-6. Don't use emojis or bullet points
-
-For privacy concerns, be understanding but explain we need location only for delivery."""
-                
-                response = openai_client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[{"role": "user", "content": prompt}],
-                    max_tokens=120,
-                    temperature=0.9
-                )
-                
-                return response.choices[0].message.content.strip()
-                
-            except Exception as e:
-                retry_count += 1
-                print(f"OpenAI API error (attempt {retry_count}/{max_retries}): {e}")
-                if retry_count < max_retries:
-                    time.sleep(2 ** retry_count)
-                
-        return "Sorry, couldn't process your message. Please call 6005-69699 for assistance."
-    
-    def _send_reply_with_rate_limit(self, phone_number: str, message: str) -> bool:
-        if not self.can_send_reply(phone_number):
-            print(f"Reply rate limited for {phone_number}")
-            return False
-
-        delay = self.get_reply_delay()
-        time.sleep(delay)
-        
-        success = self._send_message(phone_number, message)
-        if success:
-            current_time = time.time()
-            self.last_message_time[phone_number] = current_time
-            self.save_rate_limits()
-        
-        return success
-    
-    def _send_outreach_with_rate_limit(self, phone_number: str, message: str) -> bool:
-        if not self.can_send_outreach_message():
-            return False
-        
-        success = self._send_message(phone_number, message)
-        if success:
-            current_time = time.time()
-            self.outreach_state['last_sent_time'] = current_time
-            self.outreach_state['sent_count'] += 1
-            self.contacted_today.add(phone_number)
-            self.save_outreach_state()
-            self.save_contacted_today()
-        
-        return success
-    
-    def send_initial_location_request(self, phone_number: str) -> bool:
-        if phone_number in self.contacted_today:
-            return False
+        try:
+            if not openai_client:
+                return "Sorry, I'm having technical difficulties. Please call 6005-69699 for assistance."
             
-        message = self.generate_ai_message("initial_outreach")
-        return self._send_outreach_with_rate_limit(phone_number, message)
-    
-    def send_location_request_after_name(self, phone_number: str, customer_name: str) -> bool:
-        message = self.generate_ai_message("location_request", customer_name)
-        return self._send_reply_with_rate_limit(phone_number, message)
+            if message_type == "initial_outreach":
+                prompt = """Generate a brief, friendly WhatsApp message (max 50 words) for OxyPlus Water Delivery introducing our premium water service. Ask for their name and mention we'll need location for delivery. Sound natural and professional. Don't use bullet points or emojis."""
+            
+            elif message_type == "location_request":
+                prompt = f"""Generate a brief message (max 40 words) asking {customer_name} to share their location using WhatsApp's location feature for OxyPlus water delivery. Be friendly and explain it's needed for delivery. Don't use emojis."""
+            
+            elif message_type == "completion":
+                prompt = f"""Generate a brief thank you message (max 30 words) for {customer_name} confirming we received their location and will contact them soon for OxyPlus water delivery."""
+            
+            elif message_type == "follow_up":
+                prompt = f"""Generate a brief follow-up message (max 40 words) for OxyPlus water delivery. Ask {customer_name if customer_name else 'the customer'} if they're still interested and mention toll-free 6005-69699."""
+            
+            elif message_type == "redirect_to_support":
+                prompt = f"""Generate a brief message (max 30 words) politely redirecting the customer to call toll-free 6005-69699 for detailed questions about OxyPlus water service."""
+            
+            else:
+                # General response - always redirect to support for questions
+                prompt = f"""Generate a brief response (max 40 words) for OxyPlus Water Delivery that directs them to call 6005-69699 for questions, or asks for their name/location if not collected yet."""
+            
+            response = openai_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=80,
+                temperature=0.7
+            )
+            
+            return response.choices[0].message.content.strip()
+            
+        except Exception as e:
+            print(f"OpenAI API error: {e}")
+            return "Sorry, please call 6005-69699 for assistance."
     
     def analyze_message_for_name(self, message_text: str) -> Optional[str]:
         if not message_text or len(message_text.strip()) < 2:
@@ -428,37 +230,23 @@ For privacy concerns, be understanding but explain we need location only for del
         openai_client = self.get_openai_client()
         if openai_client:
             try:
-                prompt = f"""Extract a person's name from this message: "{message_text}"
-
-Rules:
-- Return ONLY the name if it's clearly a person's name
-- Return "NO_NAME" if it's not a name
-- Names should be 2-30 characters
-- Ignore questions, complaints, addresses, or service-related text
-
-Examples:
-"My name is Ahmed" → Ahmed
-"I am Sarah Khan" → Sarah Khan  
-"Mohammed" → Mohammed
-"What is this service?" → NO_NAME
-"I don't want this" → NO_NAME
-"Ahmad Ali" → Ahmad Ali
-"Hey" -> NO_NAME
-"""
+                prompt = f"""Extract a person's name from: "{message_text}"
+Return ONLY the name if it's clearly a person's name, otherwise return "NO_NAME".
+Examples: "Ahmed" → Ahmed, "I am Sarah" → Sarah, "What service?" → NO_NAME"""
                 
                 response = openai_client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[{"role": "user", "content": prompt}],
-                    max_tokens=50,
-                    temperature=0.4
+                    max_tokens=30,
+                    temperature=0.3
                 )
 
                 result = response.choices[0].message.content.strip()
-                if result and result != "NO_NAME" and 2 <= len(result) <= 30:
+                if result and result != "NO_NAME" and 2 <= len(result) <= 25:
                     return result.title()
                     
             except Exception as e:
-                print(f"Error with OpenAI name extraction: {e}")
+                print(f"Error with name extraction: {e}")
         
         return None
     
@@ -468,6 +256,7 @@ Examples:
             response = requests.post(f"{self.get_whatsapp_url()}/send-text", json=payload, timeout=30)
             
             if response.status_code == 200:
+                print(f"Message sent to {phone_number}")
                 return True
             else:
                 print(f"Failed to send message to {phone_number}: {response.text}")
@@ -489,6 +278,7 @@ Examples:
                         df.loc[mask, key] = value
                 
                 df.to_csv(self.contact_status_file, index=False)
+                print(f"Updated {phone_number} status to {status}")
         except Exception as e:
             print(f"Error updating contact status: {e}")
     
@@ -540,7 +330,6 @@ Examples:
     
     def should_send_follow_up(self, contact_info: Dict) -> bool:
         try:
-            phone_number = contact_info['contact']
             status = contact_info['status']
             last_follow_up = contact_info.get('last_follow_up', '')
             message_sent_at = contact_info.get('message_sent_at', '')
@@ -569,193 +358,100 @@ Examples:
             print(f"Error checking follow-up eligibility: {e}")
             return False
     
-    def send_messages_to_pending_contacts_gradually(self):
-        if not self.check_whatsapp_status():
-            return
-        
+    def send_outreach_messages(self):
+        """Send outreach messages to PENDING contacts during business hours"""
         if not is_business_hours():
+            print("Outside business hours, skipping outreach")
             return
         
+        if not self.check_whatsapp_status():
+            print("WhatsApp not connected")
+            return
+        
+        # Reset contacted_today if it's a new day
+        today = datetime.now().strftime('%Y-%m-%d')
+        try:
+            if os.path.exists(self.contacted_today_file):
+                with open(self.contacted_today_file, 'r') as f:
+                    data = json.load(f)
+                    if data.get('date') != today:
+                        self.contacted_today = set()
+        except:
+            self.contacted_today = set()
+        
+        # Get pending contacts that haven't been contacted today
         pending_contacts = self.get_contacts_by_status('PENDING')
         pending_contacts = [c for c in pending_contacts if c['contact'] not in self.contacted_today]
-
-        start_index = self.outreach_state.get('current_batch_index', 0)
-        remaining_contacts = pending_contacts[start_index:]
         
-        if not remaining_contacts:
+        if not pending_contacts:
+            print("No pending contacts to reach out to")
             return
-
-        contacts_to_process = min(len(remaining_contacts), 10)
         
-        success_count = 0
-        processed_count = 0
+        print(f"Found {len(pending_contacts)} pending contacts to reach out to")
         
-        for i, contact_info in enumerate(remaining_contacts[:contacts_to_process]):
-            phone_number = contact_info['contact']
+        # Send to ONE contact per run (restart-friendly approach)
+        contact_info = pending_contacts[0]  # Take the first pending contact
+        phone_number = contact_info['contact']
+        
+        # Generate and send initial message
+        message = self.generate_ai_message("initial_outreach")
+        
+        if self._send_message(phone_number, message):
+            # Update contact status
+            self.update_contact_status(
+                phone_number, 
+                'AWAITING_NAME', 
+                message_sent_at=datetime.now().isoformat()
+            )
             
-            if not self.can_send_outreach_message():
-                break
+            # Mark as contacted today
+            self.contacted_today.add(phone_number)
+            self.save_contacted_today()
             
-            if self.send_initial_location_request(phone_number):
-                self.update_contact_status(
-                    phone_number, 
-                    'AWAITING_NAME', 
-                    message_sent_at=datetime.now().isoformat()
-                )
-                success_count += 1
+            print(f"Outreach sent to {phone_number}")
             
-            processed_count += 1
-            self.outreach_state['current_batch_index'] = start_index + processed_count
-            self.save_outreach_state()
-
-            if i < contacts_to_process - 1:
-                delay = self.get_outreach_delay()
-                time.sleep(delay)
-
-        if start_index + processed_count >= len(pending_contacts):
-            self.outreach_state['current_batch_index'] = 0
-            self.save_outreach_state()
+            # Wait 5-20 minutes before allowing next outreach (this delay is preserved even if script restarts)
+            delay = random.randint(self.outreach_delay_range[0], self.outreach_delay_range[1])
+            print(f"Waiting {delay//60} minutes before next outreach can be sent...")
+            time.sleep(delay)
+        else:
+            print(f"Failed to send outreach to {phone_number}")
     
-    def send_follow_up_messages(self):
-        if not is_business_hours():
-            return
-            
+    def send_follow_up_messages(self):            
         try:
             awaiting_contacts = self.get_contacts_by_status('AWAITING_NAME') + self.get_contacts_by_status('AWAITING_LOCATION')
             
-            follow_up_sent = 0
             for contact_info in awaiting_contacts:
-                if follow_up_sent >= 20:
-                    break
-                    
                 if self.should_send_follow_up(contact_info):
                     phone_number = contact_info['contact']
                     customer_name = contact_info.get('customer_name', '')
                     
                     follow_up_msg = self.generate_ai_message("follow_up", customer_name)
                     
-                    if self._send_reply_with_rate_limit(phone_number, follow_up_msg):
+                    if self._send_message(phone_number, follow_up_msg):
                         self.update_contact_status(
                             phone_number, 
                             contact_info['status'],
                             last_follow_up=datetime.now().isoformat()
                         )
-                        follow_up_sent += 1
+                        print(f"Follow-up sent to {phone_number}")
                         
-                        time.sleep(random.randint(300, 900))
+                        # Wait 1-3 minutes between follow-ups
+                        delay = random.randint(self.reply_delay_range[0], self.reply_delay_range[1])
+                        time.sleep(delay)
+                        
         except Exception as e:
             print(f"Error sending follow-up messages: {e}")
     
-    def process_single_message(self, message_data: dict, active_contacts: dict) -> bool:
-        try:
-            phone_number = message_data.get('from', '').replace('@c.us', '')
-            message_body = message_data.get('body', '')
-            message_type = message_data.get('type', '')
-            msg_id = message_data.get('id')
-            
-            if phone_number not in active_contacts:
-                return False
-            
-            contact_info = active_contacts[phone_number]
-            current_status = contact_info['status']
-            customer_name = contact_info.get('customer_name', '')
-            
-            if message_type == 'location':
-                if current_status in ['AWAITING_LOCATION', 'COLLECTING_LOCATION'] and customer_name:
-                    location_data = self.check_location_for_contact(phone_number)
-                    if location_data:
-                        self.save_location_data(phone_number, customer_name, location_data)
-                        
-                        self.update_contact_status(
-                            phone_number,
-                            'COMPLETED',
-                            location_received_at=datetime.now().isoformat()
-                        )
-                        
-                        thank_you_msg = self.generate_ai_message("completion", customer_name)
-                        self._send_reply_with_rate_limit(phone_number, thank_you_msg)
-                        return True
-            
-            elif current_status == 'AWAITING_NAME' and message_body:
-                extracted_name = self.analyze_message_for_name(message_body)
-                
-                if extracted_name:
-                    self.update_contact_status(
-                        phone_number,
-                        'AWAITING_LOCATION',
-                        customer_name=extracted_name,
-                        name_collected_at=datetime.now().isoformat()
-                    )
-                    
-                    self.send_location_request_after_name(phone_number, extracted_name)
-                    return True
-                else:
-                    response_msg = self.generate_ai_message("intelligent_response", customer_name, message_body)
-                    self._send_reply_with_rate_limit(phone_number, response_msg)
-                    return True
-            
-            elif current_status in ['AWAITING_LOCATION', 'COLLECTING_LOCATION'] and message_body:
-                if any(word in message_body.lower() for word in ['question', 'help', 'what', 'how', 'why', 'when', 'price', 'cost', 'service']):
-                    response_msg = self.generate_ai_message("redirect_to_support", customer_name)
-                else:
-                    response_msg = self.generate_ai_message("intelligent_response", customer_name, message_body)
-                
-                self._send_reply_with_rate_limit(phone_number, response_msg)
-                return True
-            
-            return False
-            
-        except Exception as e:
-            print(f"Error processing message from {phone_number}: {e}")
-            return False
-    
-    def graceful_shutdown(self):
-        self.is_running = False
-        self.save_processed_messages()
-        self.save_rate_limits()
-        self.save_outreach_state()
-        self.save_contacted_today()
-        self.save_follow_up_tracking()
-
-        for thread in self.processing_threads:
-            if thread.is_alive():
-                thread.join(timeout=30)
-    
-    def process_messages_parallel(self, messages: List[dict], active_contacts: dict):
-        if not messages:
-            return
-
-        new_messages = [
-            msg for msg in messages 
-            if msg.get('id') not in self.processed_messages and not msg.get('fromMe', False)
-        ]
+    def delayed_reply(self, phone_number, message, delay):
+        def send_after_delay():
+            time.sleep(delay)
+            self._send_message(phone_number, message)
         
-        if not new_messages:
-            return
+        thread = threading.Thread(target=send_after_delay)
+        thread.daemon = True
+        thread.start()
 
-        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            future_to_message = {
-                executor.submit(self.process_single_message, msg, active_contacts): msg 
-                for msg in new_messages
-            }
-
-            processed_count = 0
-            for future in as_completed(future_to_message):
-                message = future_to_message[future]
-                try:
-                    success = future.result()
-                    if success:
-                        processed_count += 1
-                    self.processed_messages.add(message.get('id'))
-                except Exception as e:
-                    print(f"Error in parallel processing: {e}")
-                    self.processed_messages.add(message.get('id'))
-
-                time.sleep(1)
-        
-        if new_messages:
-            self.save_processed_messages()
-    
     def process_incoming_messages(self):
         self.is_running = True
         
@@ -766,7 +462,7 @@ Examples:
                         time.sleep(30)
                         continue
 
-                    response = requests.get(f"{self.get_whatsapp_url()}/messages?limit=50", timeout=10)
+                    response = requests.get(f"{self.get_whatsapp_url()}/messages?limit=200", timeout=10)
                     if response.status_code != 200:
                         time.sleep(30)
                         continue
@@ -775,16 +471,74 @@ Examples:
                     messages = messages_data.get('messages', [])
 
                     active_contacts = {}
-                    for status in ['AWAITING_NAME', 'AWAITING_LOCATION', 'COLLECTING_LOCATION']:
+                    for status in ['AWAITING_NAME', 'AWAITING_LOCATION']:
                         contacts = self.get_contacts_by_status(status)
                         for contact in contacts:
                             active_contacts[contact['contact']] = contact
 
-                    self.process_messages_parallel(messages, active_contacts)
+                    for message_data in messages:
+                        if message_data.get('fromMe', False):
+                            continue
+                            
+                        msg_id = message_data.get('id')
+                        if msg_id in self.processed_messages:
+                            continue
+                        
+                        phone_number = message_data.get('from', '').replace('@c.us', '')
+                        message_body = message_data.get('body', '')
+                        message_type = message_data.get('type', '')
+                        
+                        if phone_number not in active_contacts:
+                            self.processed_messages.add(msg_id)
+                            continue
+                        
+                        contact_info = active_contacts[phone_number]
+                        current_status = contact_info['status']
+                        customer_name = contact_info.get('customer_name', '')
 
-                    if random.random() < 0.1:
-                        self.send_follow_up_messages()
+                        if message_type == 'location':
+                            if current_status == 'AWAITING_LOCATION' and customer_name:
+                                location_data = self.check_location_for_contact(phone_number)
+                                if location_data:
+                                    self.save_location_data(phone_number, customer_name, location_data)
+                                    
+                                    self.update_contact_status(
+                                        phone_number,
+                                        'COMPLETED',
+                                        location_received_at=datetime.now().isoformat()
+                                    )
 
+                                    delay = random.randint(self.reply_delay_range[0], self.reply_delay_range[1])
+                                    thank_you_msg = self.generate_ai_message("completion", customer_name)
+                                    self.delayed_reply(phone_number, thank_you_msg, delay)
+
+                        elif current_status == 'AWAITING_NAME' and message_body:
+                            extracted_name = self.analyze_message_for_name(message_body)
+                            
+                            if extracted_name:
+                                self.update_contact_status(
+                                    phone_number,
+                                    'AWAITING_LOCATION',
+                                    customer_name=extracted_name,
+                                    name_collected_at=datetime.now().isoformat()
+                                )
+
+                                delay = random.randint(self.reply_delay_range[0], self.reply_delay_range[1])
+                                location_msg = self.generate_ai_message("location_request", extracted_name)
+                                self.delayed_reply(phone_number, location_msg, delay)
+                            else:
+                                delay = random.randint(self.reply_delay_range[0], self.reply_delay_range[1])
+                                response_msg = self.generate_ai_message("redirect_to_support")
+                                self.delayed_reply(phone_number, response_msg, delay)
+
+                        elif current_status == 'AWAITING_LOCATION' and message_body:
+                            delay = random.randint(self.reply_delay_range[0], self.reply_delay_range[1])
+                            response_msg = self.generate_ai_message("redirect_to_support")
+                            self.delayed_reply(phone_number, response_msg, delay)
+                        
+                        self.processed_messages.add(msg_id)
+                    
+                    self.save_processed_messages()
                     time.sleep(10)
                     
                 except KeyboardInterrupt:
@@ -793,50 +547,35 @@ Examples:
                     print(f"Error in message processing: {e}")
                     time.sleep(30)
         finally:
-            self.graceful_shutdown()
+            self.is_running = False
     
-    def run_continuous_outreach(self):
+    def run_outreach_loop(self):
+        """Main outreach loop - continuously sends messages to pending contacts"""
         while self.is_running:
             try:
-                if not self.check_whatsapp_status():
-                    time.sleep(60)
-                    continue
-
-                today = datetime.now().strftime('%Y-%m-%d')
-                if self.outreach_state['date'] != today:
-                    self.outreach_state = {
-                        'date': today,
-                        'sent_count': 0,
-                        'last_sent_time': 0,
-                        'current_batch_index': 0
-                    }
-                    self.contacted_today = set()
-                    self.save_outreach_state()
-                    self.save_contacted_today()
-
-                if not is_business_hours():
-                    next_business_hour = datetime.now().replace(hour=9, minute=0, second=0, microsecond=0)
-                    if datetime.now().hour >= 18:
-                        next_business_hour += timedelta(days=1)
-                    
-                    sleep_time = (next_business_hour - datetime.now()).total_seconds()
-                    time.sleep(min(sleep_time, 3600))
-                    continue
-
-                self.send_messages_to_pending_contacts_gradually()
-                time.sleep(600)
+                print("Running outreach cycle...")
+                self.send_outreach_messages()
+                
+                # Send follow-ups occasionally
+                if random.random() < 0.3:  # 30% chance to check follow-ups
+                    self.send_follow_up_messages()
+                
+                # Short wait before checking for more contacts (restart-friendly)
+                print("Waiting 2 minutes before next check...")
+                time.sleep(10)  # 2 minutes - allows script to restart without losing progress
                 
             except KeyboardInterrupt:
                 break
             except Exception as e:
-                print(f"Error in continuous outreach: {e}")
-                time.sleep(300)
+                print(f"Error in outreach loop: {e}")
+                time.sleep(120)  # Wait 2 minutes on error
 
 def main():
     os.chdir(os.path.join(os.path.abspath(os.curdir),'whatsappbot'))
 
     openai_key = load_settings()['openai_api_key']
     while not openai_key:
+        print("Waiting for OpenAI API key...")
         openai_key = load_settings()['openai_api_key']
         time.sleep(30)
     
@@ -844,34 +583,48 @@ def main():
     
     txt_file = 'contacts.txt'
     if not os.path.exists(txt_file):
+        print("contacts.txt not found")
         return
     
     contacts = collector.load_contacts_from_txt(txt_file)
     if not contacts:
+        print("No contacts found in contacts.txt")
         return
     
+    print(f"Loaded {len(contacts)} contacts")
     collector.create_contact_status_csv(contacts)
     
-    import threading
-    
-    def reply_processor():
+    # Start both threads
+    def message_processor():
+        print("Starting message processor...")
         collector.process_incoming_messages()
 
     def outreach_processor():
-        collector.run_continuous_outreach()
+        print("Starting outreach processor...")
+        collector.run_outreach_loop()
 
-    reply_thread = threading.Thread(target=reply_processor, daemon=True)
+    message_thread = threading.Thread(target=message_processor, daemon=True)
     outreach_thread = threading.Thread(target=outreach_processor, daemon=True)
     
-    reply_thread.start()
-    time.sleep(2)
+    collector.is_running = True
+    
+    message_thread.start()
+    time.sleep(5)  # Start outreach after message processor
     outreach_thread.start()
     
+    print("Bot started successfully!")
+    print("- Message processing: Running")
+    print("- Outreach system: Running") 
+    print("- Business hours: 9 AM - 6 PM")
+    print("- Outreach delay: 5-20 minutes")
+    print("- Reply delay: 1-3 minutes")
+    
     try:
-        while reply_thread.is_alive() or outreach_thread.is_alive():
+        while message_thread.is_alive() or outreach_thread.is_alive():
             time.sleep(30)
     except KeyboardInterrupt:
-        collector.graceful_shutdown()
+        print("Shutting down...")
+        collector.is_running = False
 
 if __name__ == "__main__":
     main()
