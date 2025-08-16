@@ -50,10 +50,9 @@ class EnhancedWhatsAppCollector:
         self.contacted_today_file = "contacted_today.json"
 
         self.is_running = False
-        
-        # Fixed timing intervals as requested
-        self.outreach_delay_range = (300, 1200)  # 5-20 minutes between outreach messages
-        self.reply_delay_range = (60, 180)       # 1-3 minutes for replies
+
+        self.outreach_delay_range = (300, 1200)
+        self.reply_delay_range = (60, 180)
         
         self.last_message_time = {}
         self.contacted_today = self.load_contacted_today()
@@ -204,11 +203,30 @@ class EnhancedWhatsAppCollector:
                 prompt = f"""Generate a brief follow-up message (max 40 words) for OxyPlus water delivery. Ask {customer_name if customer_name else 'the customer'} if they're still interested and mention toll-free 6005-69699."""
             
             elif message_type == "redirect_to_support":
-                prompt = f"""Generate a brief message (max 30 words) politely redirecting the customer to call toll-free 6005-69699 for detailed questions about OxyPlus water service."""
+                prompt = f"""Analyze this customer message: "{user_message}"
+                
+                If the message is asking how we got their number or about privacy:
+                - Tell them they are registered in our database as a customer
+                - Briefly explain we need their name and location for water delivery service
+                - Don't mention the toll number
+                
+                If the message is asking about pricing, products, delivery times, or other service details:
+                - Mention that your only job is to collect customers name and location from given contacts, for more info here is toll-free 6005-69699
+                - Only mention toll-free 6005-69699 if you cannot answer their specific question
+                
+                If the message is unrelated to water service or just random text:
+                - Politely redirect to toll-free 6005-69699
+                
+                Keep response under 40 words. Be helpful and intelligent, not robotic."""
             
             else:
-                # General response - always redirect to support for questions
-                prompt = f"""Generate a brief response (max 40 words) for OxyPlus Water Delivery that directs them to call 6005-69699 for questions, or asks for their name/location if not collected yet."""
+                prompt = f"""Analyze this customer message: "{user_message}"
+                
+                If asking about how we got their number: Tell them they are registered as a customer and we need name/location for delivery.
+                If asking service questions: Try to help or mention 6005-69699 only if needed.
+                If unrelated: Redirect to 6005-69699.
+                
+                Max 40 words."""
             
             response = openai_client.chat.completions.create(
                 model="gpt-4o-mini",
@@ -359,7 +377,6 @@ Examples: "Ahmed" → Ahmed, "I am Sarah" → Sarah, "What service?" → NO_NAME
             return False
     
     def send_outreach_messages(self):
-        """Send outreach messages to PENDING contacts during business hours"""
         if not is_business_hours():
             print("Outside business hours, skipping outreach")
             return
@@ -367,8 +384,7 @@ Examples: "Ahmed" → Ahmed, "I am Sarah" → Sarah, "What service?" → NO_NAME
         if not self.check_whatsapp_status():
             print("WhatsApp not connected")
             return
-        
-        # Reset contacted_today if it's a new day
+
         today = datetime.now().strftime('%Y-%m-%d')
         try:
             if os.path.exists(self.contacted_today_file):
@@ -378,8 +394,7 @@ Examples: "Ahmed" → Ahmed, "I am Sarah" → Sarah, "What service?" → NO_NAME
                         self.contacted_today = set()
         except:
             self.contacted_today = set()
-        
-        # Get pending contacts that haven't been contacted today
+
         pending_contacts = self.get_contacts_by_status('PENDING')
         pending_contacts = [c for c in pending_contacts if c['contact'] not in self.contacted_today]
         
@@ -388,29 +403,24 @@ Examples: "Ahmed" → Ahmed, "I am Sarah" → Sarah, "What service?" → NO_NAME
             return
         
         print(f"Found {len(pending_contacts)} pending contacts to reach out to")
-        
-        # Send to ONE contact per run (restart-friendly approach)
-        contact_info = pending_contacts[0]  # Take the first pending contact
+
+        contact_info = pending_contacts[0]
         phone_number = contact_info['contact']
-        
-        # Generate and send initial message
+
         message = self.generate_ai_message("initial_outreach")
         
         if self._send_message(phone_number, message):
-            # Update contact status
             self.update_contact_status(
                 phone_number, 
                 'AWAITING_NAME', 
                 message_sent_at=datetime.now().isoformat()
             )
-            
-            # Mark as contacted today
+
             self.contacted_today.add(phone_number)
             self.save_contacted_today()
             
             print(f"Outreach sent to {phone_number}")
-            
-            # Wait 5-20 minutes before allowing next outreach (this delay is preserved even if script restarts)
+
             delay = random.randint(self.outreach_delay_range[0], self.outreach_delay_range[1])
             print(f"Waiting {delay//60} minutes before next outreach can be sent...")
             time.sleep(delay)
@@ -435,8 +445,7 @@ Examples: "Ahmed" → Ahmed, "I am Sarah" → Sarah, "What service?" → NO_NAME
                             last_follow_up=datetime.now().isoformat()
                         )
                         print(f"Follow-up sent to {phone_number}")
-                        
-                        # Wait 1-3 minutes between follow-ups
+
                         delay = random.randint(self.reply_delay_range[0], self.reply_delay_range[1])
                         time.sleep(delay)
                         
@@ -454,7 +463,6 @@ Examples: "Ahmed" → Ahmed, "I am Sarah" → Sarah, "What service?" → NO_NAME
 
     def process_incoming_messages(self):
         self.is_running = True
-        
         try:
             while self.is_running:
                 try:
@@ -462,7 +470,7 @@ Examples: "Ahmed" → Ahmed, "I am Sarah" → Sarah, "What service?" → NO_NAME
                         time.sleep(30)
                         continue
 
-                    response = requests.get(f"{self.get_whatsapp_url()}/messages?limit=200", timeout=10)
+                    response = requests.get(f"{self.get_whatsapp_url()}/messages?limit=20", timeout=10)
                     if response.status_code != 200:
                         time.sleep(30)
                         continue
@@ -528,18 +536,18 @@ Examples: "Ahmed" → Ahmed, "I am Sarah" → Sarah, "What service?" → NO_NAME
                                 self.delayed_reply(phone_number, location_msg, delay)
                             else:
                                 delay = random.randint(self.reply_delay_range[0], self.reply_delay_range[1])
-                                response_msg = self.generate_ai_message("redirect_to_support")
+                                response_msg = self.generate_ai_message("redirect_to_support", "Beloved Customer", message_body)
                                 self.delayed_reply(phone_number, response_msg, delay)
 
                         elif current_status == 'AWAITING_LOCATION' and message_body:
                             delay = random.randint(self.reply_delay_range[0], self.reply_delay_range[1])
-                            response_msg = self.generate_ai_message("redirect_to_support")
+                            response_msg = self.generate_ai_message("redirect_to_support", customer_name, message_body)
                             self.delayed_reply(phone_number, response_msg, delay)
                         
                         self.processed_messages.add(msg_id)
                     
                     self.save_processed_messages()
-                    time.sleep(10)
+                    time.sleep(1)
                     
                 except KeyboardInterrupt:
                     break
@@ -550,25 +558,22 @@ Examples: "Ahmed" → Ahmed, "I am Sarah" → Sarah, "What service?" → NO_NAME
             self.is_running = False
     
     def run_outreach_loop(self):
-        """Main outreach loop - continuously sends messages to pending contacts"""
         while self.is_running:
             try:
                 print("Running outreach cycle...")
                 self.send_outreach_messages()
-                
-                # Send follow-ups occasionally
-                if random.random() < 0.3:  # 30% chance to check follow-ups
+
+                if random.random() < 0.3:
                     self.send_follow_up_messages()
-                
-                # Short wait before checking for more contacts (restart-friendly)
+
                 print("Waiting 2 minutes before next check...")
-                time.sleep(10)  # 2 minutes - allows script to restart without losing progress
+                time.sleep(10)
                 
             except KeyboardInterrupt:
                 break
             except Exception as e:
                 print(f"Error in outreach loop: {e}")
-                time.sleep(120)  # Wait 2 minutes on error
+                time.sleep(120)
 
 def main():
     os.chdir(os.path.join(os.path.abspath(os.curdir),'whatsappbot'))
@@ -627,4 +632,5 @@ def main():
         collector.is_running = False
 
 if __name__ == "__main__":
+    random.seed(73)
     main()
